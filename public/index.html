@@ -2047,6 +2047,15 @@
           ${kpi("已报价", metrics.quotesSent, "Sent / Accepted")}
           ${kpi("订单金额", formatMoney(metrics.orderValue), metrics.orders + " 个订单")}
         </section>
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title"><strong>Tier0 演示集成</strong><span>通过 /api/tier0 向 Tier0 发送 JSON</span></div>
+            <button class="btn primary" id="tier0DemoSend">${icon("upload")}发送 Tier0 测试事件</button>
+          </div>
+          <div class="panel-body">
+            <div class="code" id="tier0DemoResult">已准备好发送 moke-crm-demo 的 sample_created 测试事件。</div>
+          </div>
+        </section>
         <section class="grid two">
           <div class="panel">
             <div class="panel-head">
@@ -2090,6 +2099,7 @@
           </div>
         </section>
       `;
+      document.getElementById("tier0DemoSend").addEventListener("click", sendTier0TestEvent);
     }
 
     function kpi(label, value, note) {
@@ -2655,6 +2665,7 @@
         else record[f.key] = input.value;
       });
       record.updated_at = iso(today);
+      const tier0Action = existing ? "updated" : "created";
       if (existing) {
         state[table] = state[table].map(row => row[meta.id] === existing[meta.id] ? record : row);
       } else {
@@ -2672,6 +2683,8 @@
       renderTopActions();
       selectedId = record[meta.id];
       render();
+      const tier0Event = buildTier0RecordEvent(table, record, tier0Action);
+      if (tier0Event) sendTier0Event(tier0Event);
     }
 
     function defaultRecord(table) {
@@ -2937,6 +2950,117 @@
       node.classList.add("show");
       clearTimeout(toast.timer);
       toast.timer = setTimeout(() => node.classList.remove("show"), 2600);
+    }
+
+    async function sendTier0Event(eventBody, successMessage = "Tier0 事件已发送") {
+      try {
+        const response = await fetch("/api/tier0", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(eventBody)
+        });
+        const responseText = await response.text();
+        const result = {
+          ok: response.ok,
+          status: response.status,
+          response: parseMaybeJson(responseText)
+        };
+        if (!response.ok) {
+          toast(`Tier0 发送失败：${response.status}`);
+          return result;
+        }
+        toast(successMessage);
+        return result;
+      } catch (error) {
+        console.error("Tier0 传输失败", error);
+        toast(`Tier0 发送失败：${error.message || error}`);
+        return { ok: false, error: error.message || String(error) };
+      }
+    }
+
+    async function sendTier0TestEvent() {
+      const button = document.getElementById("tier0DemoSend");
+      const output = document.getElementById("tier0DemoResult");
+      const eventBody = {
+        event: "sample_created",
+        namespace: "MOKE/RD/Samples/RD-001",
+        timestamp: new Date().toISOString(),
+        payload: {
+          sample_id: "RD-001",
+          customer: "ABC Bakery",
+          product_type: "chocolate",
+          recipe_name: "Sea Salt Pistachio Dark Chocolate",
+          sweetness: 7,
+          cocoa_intensity: 8,
+          milkiness: 5,
+          nutty: 6,
+          feedback_score: 8,
+          source: "moke-crm-demo"
+        }
+      };
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = `${icon("refresh")}发送中...`;
+      }
+      if (output) {
+        output.textContent = JSON.stringify({ sending: true, request: eventBody }, null, 2);
+      }
+      const result = await sendTier0Event(eventBody, "Tier0 测试事件已发送");
+      if (output) {
+        output.textContent = JSON.stringify({
+          request: eventBody,
+          result
+        }, null, 2);
+      }
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = `${icon("upload")}发送 Tier0 测试事件`;
+      }
+      return result;
+    }
+
+    function parseMaybeJson(text) {
+      if (!text) return "";
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text;
+      }
+    }
+
+    function buildTier0RecordEvent(table, record, action) {
+      const tier0Tables = {
+        customers: {
+          event: "customer",
+          namespace: item => `MOKE/CRM/Customers/${item.customer_id}`
+        },
+        samples: {
+          event: "sample",
+          namespace: item => `MOKE/RD/Samples/${item.sample_id}`
+        },
+        products: {
+          event: "recipe",
+          namespace: item => `MOKE/RD/Recipes/${item.product_id}`
+        },
+        productFlavorScores: {
+          event: "recipe_score",
+          namespace: item => `MOKE/RD/Recipes/${item.product_id || "unknown"}/FlavorScores/${item.score_id}`
+        },
+        customerFeedback: {
+          event: "feedback",
+          namespace: item => `MOKE/CRM/Feedback/${item.feedback_id}`
+        }
+      };
+      const config = tier0Tables[table];
+      if (!config) return null;
+      return {
+        event: `${config.event}_${action}`,
+        namespace: config.namespace(record),
+        timestamp: new Date().toISOString(),
+        payload: structuredClone(record)
+      };
     }
 
     function finishDataReset(message) {
