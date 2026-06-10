@@ -1,0 +1,463 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum CustomerType {
+  Distributor
+  Retailer
+  Bakery
+  Cafe
+  Hotel
+  Corporate_Gift @map("Corporate Gift")
+  End_Consumer   @map("End Consumer")
+  Other
+}
+
+enum CustomerStatus {
+  Potential
+  Active
+  Converted
+  Lost
+  Dormant
+}
+
+enum CustomerLevel {
+  A
+  B
+  C
+}
+
+enum DecisionRole {
+  Owner
+  Buyer
+  Product_Manager @map("Product Manager")
+  RD              @map("R&D")
+  Store_Manager   @map("Store Manager")
+  Marketing
+  Other
+}
+
+enum ProductStatus {
+  Concept
+  Sample
+  Testing
+  Launched
+  Discontinued
+}
+
+enum FlavorDimension {
+  Texture
+  Aroma
+  Taste
+}
+
+enum SampleStatus {
+  Prepared
+  Sent
+  Received
+  Tasted
+  Feedback_Received @map("Feedback Received")
+  No_Response       @map("No Response")
+}
+
+enum OpportunityStage {
+  Lead
+  Contacted
+  Interested
+  Sample_Sent   @map("Sample Sent")
+  Testing
+  Quoted
+  Trial_Order   @map("Trial Order")
+  Regular_Order @map("Regular Order")
+  Repeat_Order  @map("Repeat Order")
+  Lost
+}
+
+enum QuoteStatus {
+  Draft
+  Sent
+  Accepted
+  Rejected
+  Expired
+}
+
+enum PaymentStatus {
+  Unpaid
+  Partial
+  Paid
+}
+
+enum DeliveryStatus {
+  Not_Shipped @map("Not Shipped")
+  Shipped
+  Delivered
+  Completed
+}
+
+enum InteractionType {
+  Email
+  WeChat
+  Phone
+  Meeting
+  Visit
+  Sampling
+  Other
+}
+
+enum SweetnessFeedback {
+  Too_Low       @map("Too Low")
+  Slightly_Low  @map("Slightly Low")
+  Just_Right    @map("Just Right")
+  Slightly_High @map("Slightly High")
+  Too_High      @map("Too High")
+}
+
+enum PriceAcceptance {
+  Too_Expensive      @map("Too Expensive")
+  Acceptable
+  Good_Value         @map("Good Value")
+  Premium_Acceptable @map("Premium Acceptable")
+}
+
+enum SyncStatus {
+  not_synced
+  synced
+  failed
+}
+
+model Customer {
+  customerId    String         @id @map("customer_id")
+  customerName  String         @map("customer_name")
+  customerType  CustomerType   @map("customer_type")
+  country       String
+  city          String
+  sourceChannel String?        @map("source_channel")
+  customerLevel CustomerLevel  @map("customer_level")
+  status        CustomerStatus
+  owner         String
+  notes         String?
+  sourceSystem  String         @default("MOKE_CRM") @map("source_system")
+  syncStatus    SyncStatus     @default(not_synced) @map("sync_status")
+  externalId    String?        @map("external_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  contacts      Contact[]
+  samples       Sample[]
+  opportunities Opportunity[]
+  quotes        Quote[]
+  orders        Order[]
+  interactions  Interaction[]
+  feedback      CustomerFeedback[]
+  tasteProfile  CustomerTasteProfile?
+
+  @@map("customers")
+}
+
+model Contact {
+  contactId        String       @id @map("contact_id")
+  customerId       String       @map("customer_id")
+  contactName      String       @map("contact_name")
+  position         String?
+  phone            String?
+  email            String?
+  wechat           String?
+  decisionRole     DecisionRole @map("decision_role")
+  isPrimaryContact Boolean      @default(false) @map("is_primary_contact")
+  notes            String?
+  sourceSystem     String       @default("MOKE_CRM") @map("source_system")
+  syncStatus       SyncStatus   @default(not_synced) @map("sync_status")
+  externalId       String?      @map("external_id")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  customer         Customer     @relation(fields: [customerId], references: [customerId])
+  samples          Sample[]
+  interactions     Interaction[]
+  feedback         CustomerFeedback[]
+
+  @@index([customerId])
+  @@map("contacts")
+}
+
+model Product {
+  productId       String        @id @map("product_id")
+  productName     String        @map("product_name")
+  sku             String?
+  productLine     String?       @map("product_line")
+  cacaoPercentage String?       @map("cacao_percentage")
+  productStatus   ProductStatus @map("product_status")
+  description     String?
+  generatedType   String?       @map("generated_type")
+  sourceSystem    String        @default("MOKE_CRM") @map("source_system")
+  syncStatus      SyncStatus    @default(not_synced) @map("sync_status")
+  externalId      String?       @map("external_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  flavorScores    ProductFlavorScore[]
+  samples         Sample[]
+  quotes          Quote[]
+  orders          Order[]
+  feedback        CustomerFeedback[]
+
+  @@map("products")
+}
+
+model FlavorTag {
+  tagId       String          @id @map("tag_id")
+  dimension   FlavorDimension
+  tagNameCn   String          @map("tag_name_cn")
+  tagNameEn   String          @map("tag_name_en")
+  definition  String?
+  scale0      String?         @map("scale_0")
+  scale3      String?         @map("scale_3")
+  scale5      String?         @map("scale_5")
+  isCoreTag   Boolean         @default(false) @map("is_core_tag")
+  sourceSystem String         @default("MOKE_CRM") @map("source_system")
+  syncStatus  SyncStatus      @default(not_synced) @map("sync_status")
+  externalId  String?         @map("external_id")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  flavorScores ProductFlavorScore[]
+
+  @@map("flavor_tags")
+}
+
+model ProductFlavorScore {
+  scoreId        String    @id @map("score_id")
+  productId      String    @map("product_id")
+  tagId          String    @map("tag_id")
+  score          Float
+  isPrimaryTag   Boolean   @default(false) @map("is_primary_tag")
+  isSecondaryTag Boolean   @default(false) @map("is_secondary_tag")
+  evaluator      String?
+  evaluationDate DateTime? @map("evaluation_date")
+  notes          String?
+  sourceSystem   String    @default("MOKE_CRM") @map("source_system")
+  syncStatus     SyncStatus @default(not_synced) @map("sync_status")
+  externalId     String?   @map("external_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  product        Product   @relation(fields: [productId], references: [productId])
+  tag            FlavorTag @relation(fields: [tagId], references: [tagId])
+
+  @@unique([productId, tagId])
+  @@index([tagId])
+  @@map("product_flavor_scores")
+}
+
+model Sample {
+  sampleId        String       @id @map("sample_id")
+  customerId      String       @map("customer_id")
+  contactId       String?      @map("contact_id")
+  productId       String       @map("product_id")
+  sampleBatch     String?      @map("sample_batch")
+  sampleQuantity  Int?         @map("sample_quantity")
+  sentDate        DateTime?    @map("sent_date")
+  receivedDate    DateTime?    @map("received_date")
+  sampleStatus    SampleStatus @map("sample_status")
+  feedbackDueDate DateTime?    @map("feedback_due_date")
+  logisticsInfo   String?      @map("logistics_info")
+  notes           String?
+  sourceSystem    String       @default("MOKE_CRM") @map("source_system")
+  syncStatus      SyncStatus   @default(not_synced) @map("sync_status")
+  externalId      String?      @map("external_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  customer        Customer     @relation(fields: [customerId], references: [customerId])
+  contact         Contact?     @relation(fields: [contactId], references: [contactId])
+  product         Product      @relation(fields: [productId], references: [productId])
+  feedback        CustomerFeedback[]
+
+  @@index([customerId])
+  @@index([productId])
+  @@map("samples")
+}
+
+model Opportunity {
+  opportunityId     String           @id @map("opportunity_id")
+  customerId        String           @map("customer_id")
+  productInterest   String?          @map("product_interest")
+  stage             OpportunityStage
+  expectedValue     Float?           @map("expected_value")
+  probability       Float?
+  nextAction        String?          @map("next_action")
+  nextFollowUpDate  DateTime?        @map("next_follow_up_date")
+  lostReason        String?          @map("lost_reason")
+  owner             String
+  sourceSystem      String           @default("MOKE_CRM") @map("source_system")
+  syncStatus        SyncStatus       @default(not_synced) @map("sync_status")
+  externalId        String?          @map("external_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  customer          Customer         @relation(fields: [customerId], references: [customerId])
+  quotes            Quote[]
+  orders            Order[]
+  interactions      Interaction[]
+
+  @@index([customerId])
+  @@index([stage])
+  @@map("opportunities")
+}
+
+model Quote {
+  quoteId       String      @id @map("quote_id")
+  customerId    String      @map("customer_id")
+  productId     String      @map("product_id")
+  opportunityId String?     @map("opportunity_id")
+  quantity      Int?
+  unitPrice     Float?      @map("unit_price")
+  currency      String?
+  validUntil    DateTime?   @map("valid_until")
+  quoteStatus   QuoteStatus @map("quote_status")
+  notes         String?
+  sourceSystem  String      @default("MOKE_CRM") @map("source_system")
+  syncStatus    SyncStatus  @default(not_synced) @map("sync_status")
+  externalId    String?     @map("external_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  customer      Customer    @relation(fields: [customerId], references: [customerId])
+  product       Product     @relation(fields: [productId], references: [productId])
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [opportunityId])
+  orders        Order[]
+
+  @@index([customerId])
+  @@index([productId])
+  @@map("quotes")
+}
+
+model Order {
+  orderId         String         @id @map("order_id")
+  customerId      String         @map("customer_id")
+  productId       String         @map("product_id")
+  opportunityId   String?        @map("opportunity_id")
+  quoteId         String?        @map("quote_id")
+  quantity        Int?
+  totalValue      Float?         @map("total_value")
+  grossMargin     Float?         @map("gross_margin")
+  paymentStatus   PaymentStatus  @map("payment_status")
+  deliveryStatus  DeliveryStatus @map("delivery_status")
+  repeatOrderFlag Boolean        @default(false) @map("repeat_order_flag")
+  orderDate       DateTime?      @map("order_date")
+  sourceSystem    String         @default("MOKE_CRM") @map("source_system")
+  syncStatus      SyncStatus     @default(not_synced) @map("sync_status")
+  externalId      String?        @map("external_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  customer        Customer       @relation(fields: [customerId], references: [customerId])
+  product         Product        @relation(fields: [productId], references: [productId])
+  opportunity     Opportunity?   @relation(fields: [opportunityId], references: [opportunityId])
+  quote           Quote?         @relation(fields: [quoteId], references: [quoteId])
+
+  @@index([customerId])
+  @@index([productId])
+  @@map("orders")
+}
+
+model Interaction {
+  interactionId    String          @id @map("interaction_id")
+  customerId       String          @map("customer_id")
+  contactId        String?         @map("contact_id")
+  opportunityId    String?         @map("opportunity_id")
+  interactionType  InteractionType @map("interaction_type")
+  interactionDate  DateTime?       @map("interaction_date")
+  content          String?
+  nextAction       String?         @map("next_action")
+  nextFollowUpDate DateTime?       @map("next_follow_up_date")
+  owner            String
+  sourceSystem     String          @default("MOKE_CRM") @map("source_system")
+  syncStatus       SyncStatus      @default(not_synced) @map("sync_status")
+  externalId       String?         @map("external_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  customer         Customer        @relation(fields: [customerId], references: [customerId])
+  contact          Contact?        @relation(fields: [contactId], references: [contactId])
+  opportunity      Opportunity?    @relation(fields: [opportunityId], references: [opportunityId])
+
+  @@index([customerId])
+  @@map("interactions")
+}
+
+model CustomerFeedback {
+  feedbackId        String             @id @map("feedback_id")
+  customerId        String             @map("customer_id")
+  contactId         String?            @map("contact_id")
+  productId         String             @map("product_id")
+  sampleId          String?            @map("sample_id")
+  tastingDate       DateTime?          @map("tasting_date")
+  overallLiking     Int                @map("overall_liking")
+  purchaseIntent    Int                @map("purchase_intent")
+  likedTags         String             @default("[]") @map("liked_tags")
+  dislikedTags      String             @default("[]") @map("disliked_tags")
+  sweetnessFeedback SweetnessFeedback? @map("sweetness_feedback")
+  textureFeedback   String?            @map("texture_feedback")
+  aromaFeedback     String?            @map("aroma_feedback")
+  priceAcceptance   PriceAcceptance?   @map("price_acceptance")
+  comment           String?
+  sourceSystem      String             @default("MOKE_CRM") @map("source_system")
+  syncStatus        SyncStatus         @default(not_synced) @map("sync_status")
+  externalId        String?            @map("external_id")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  customer          Customer           @relation(fields: [customerId], references: [customerId])
+  contact           Contact?           @relation(fields: [contactId], references: [contactId])
+  product           Product            @relation(fields: [productId], references: [productId])
+  sample            Sample?            @relation(fields: [sampleId], references: [sampleId])
+
+  @@index([customerId])
+  @@index([productId])
+  @@map("customer_feedback")
+}
+
+model CustomerTasteProfile {
+  profileId               String     @id @map("profile_id")
+  customerId              String     @unique @map("customer_id")
+  preferredTextureTags    String     @default("[]") @map("preferred_texture_tags")
+  preferredAromaTags      String     @default("[]") @map("preferred_aroma_tags")
+  preferredTasteTags      String     @default("[]") @map("preferred_taste_tags")
+  dislikedTags            String     @default("[]") @map("disliked_tags")
+  recommendedProducts     String     @default("[]") @map("recommended_products")
+  notRecommendedProducts  String     @default("[]") @map("not_recommended_products")
+  confidenceScore         Float      @default(0) @map("confidence_score")
+  lastUpdated             DateTime   @default(now()) @map("last_updated")
+  sourceSystem            String     @default("MOKE_CRM") @map("source_system")
+  syncStatus              SyncStatus @default(not_synced) @map("sync_status")
+  externalId              String?    @map("external_id")
+  createdAt               DateTime   @default(now()) @map("created_at")
+  updatedAt               DateTime   @updatedAt @map("updated_at")
+
+  customer                Customer   @relation(fields: [customerId], references: [customerId])
+
+  @@map("customer_taste_profiles")
+}
+
+model ImportExportLog {
+  logId        String     @id @map("log_id")
+  action       String
+  tableName    String     @map("table_name")
+  fileName     String?    @map("file_name")
+  rowCount     Int?       @map("row_count")
+  status       String
+  message      String?
+  sourceSystem String     @default("MOKE_CRM") @map("source_system")
+  syncStatus   SyncStatus @default(not_synced) @map("sync_status")
+  externalId   String?    @map("external_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@map("import_export_logs")
+}

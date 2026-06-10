@@ -1,0 +1,4348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOKE CRM MVP</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f6f1;
+      --surface: #fffdfa;
+      --surface-2: #f1eee6;
+      --line: #ded8ca;
+      --text: #24211d;
+      --muted: #6d675f;
+      --soft: #837a70;
+      --accent: #176b65;
+      --accent-2: #c46d2d;
+      --accent-3: #7b4f94;
+      --ok: #157347;
+      --warn: #b7791f;
+      --danger: #b42318;
+      --shadow: 0 18px 50px rgba(44, 38, 28, 0.08);
+      --radius: 8px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #28231f;
+      color: #f7f1e5;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+      padding: 6px 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-title {
+      font-size: 19px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      color: rgba(247, 241, 229, 0.72);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 4px;
+    }
+
+    .nav button {
+      width: 100%;
+      min-height: 40px;
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      border-radius: var(--radius);
+      color: rgba(247, 241, 229, 0.78);
+      background: transparent;
+      text-align: left;
+      padding: 8px 10px;
+      transition: background 0.16s, color 0.16s;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fffdfa;
+    }
+
+    .nav .count {
+      color: rgba(247, 241, 229, 0.54);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-grid;
+      place-items: center;
+      color: currentColor;
+    }
+
+    .icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      min-height: 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 24px;
+      background: rgba(247, 246, 241, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .page-title {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .page-kicker {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .main {
+      padding: 22px 24px 30px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .searchbar {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .searchbar input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
+    }
+
+    .btn:hover {
+      border-color: #c8bdaa;
+      background: #fffaf1;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .btn.primary:hover {
+      background: #105b55;
+    }
+
+    .btn.danger {
+      color: white;
+      border-color: var(--danger);
+      background: var(--danger);
+    }
+
+    .btn.icon-only {
+      width: 38px;
+      min-width: 38px;
+      padding: 0;
+    }
+
+    .select,
+    .input,
+    .textarea {
+      width: 100%;
+      min-height: 40px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 10px;
+      outline: 0;
+    }
+
+    .textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.kpis {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .grid.two {
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      align-items: start;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel,
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      overflow: hidden;
+    }
+
+    .panel-head {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      display: grid;
+      gap: 1px;
+    }
+
+    .panel-title strong {
+      font-size: 15px;
+    }
+
+    .panel-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .kpi {
+      min-height: 118px;
+      padding: 14px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+    }
+
+    .kpi-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kpi-value {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 780;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-note {
+      color: var(--soft);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #fbf8f1;
+      color: var(--muted);
+      font-size: 12px;
+      z-index: 2;
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 13px;
+    }
+
+    tr:hover td {
+      background: #fcf8ef;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 650;
+      background: var(--surface-2);
+      color: #4c463f;
+    }
+
+    .pill.green {
+      background: #e8f4ed;
+      color: #146c43;
+    }
+
+    .pill.orange {
+      background: #fff1df;
+      color: #9a5a1f;
+    }
+
+    .pill.red {
+      background: #fdebea;
+      color: #b42318;
+    }
+
+    .pill.blue {
+      background: #e7f2f2;
+      color: #176b65;
+    }
+
+    .pill.purple {
+      background: #f0e9f6;
+      color: #694185;
+    }
+
+    .tag-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr) 64px;
+      align-items: center;
+      gap: 10px;
+      min-height: 28px;
+    }
+
+    .bar-label {
+      color: var(--text);
+      font-size: 13px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #e8e1d4;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      font-size: 12px;
+    }
+
+    .funnel {
+      display: grid;
+      gap: 8px;
+    }
+
+    .funnel-stage {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr) 76px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stage-name {
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .stage-block {
+      min-height: 26px;
+      border-radius: 5px;
+      background: #ddebe8;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-block::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: var(--w, 0%);
+      background: linear-gradient(90deg, #176b65, #c46d2d);
+    }
+
+    .stage-count {
+      font-size: 12px;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .detail {
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-title {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .detail-title h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .detail-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .meta-item {
+      padding: 10px;
+      background: #faf6ee;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-width: 0;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .meta-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 650;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--line);
+      padding: 0 16px;
+      background: #fbf8f1;
+      overflow: auto;
+    }
+
+    .tab {
+      min-height: 44px;
+      background: transparent;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      padding: 0 10px;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .split-control {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .empty {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      max-width: min(420px, calc(100vw - 36px));
+      min-height: 46px;
+      padding: 12px 14px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid #b9ded6;
+      background: #f0fbf8;
+      color: #105b55;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 80;
+    }
+
+    .toast.show {
+      display: flex;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 18, 14, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 60;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(860px, 100%);
+      max-height: min(860px, calc(100vh - 36px));
+      overflow: auto;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      box-shadow: 0 30px 90px rgba(20, 18, 15, 0.26);
+    }
+
+    .modal-head,
+    .modal-foot {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbf8f1;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .modal-foot {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      bottom: 0;
+      top: auto;
+      justify-content: flex-end;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 760;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .profile-card {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbf8f1;
+    }
+
+    .profile-score {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .ring {
+      --p: 0%;
+      width: 72px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) var(--p), #e8e1d4 0);
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-weight: 760;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute;
+    }
+
+    .flavor-radar {
+      display: grid;
+      gap: 8px;
+    }
+
+    .score-chip {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr) 44px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .score-chip input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .import-box {
+      display: grid;
+      gap: 10px;
+      border: 1px dashed #c8bdaa;
+      background: #fbf8f1;
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .code {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #4f4741;
+    }
+
+    @media (max-width: 1180px) {
+      .grid.kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid.two,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        max-height: none;
+      }
+
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .topbar,
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions,
+      .filters {
+        justify-content: stretch;
+      }
+
+      .top-actions .btn,
+      .filters .btn,
+      .filters .select {
+        flex: 1;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      .grid.kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .form-grid,
+      .detail-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row,
+      .funnel-stage {
+        grid-template-columns: 110px minmax(0, 1fr) 54px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid.kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">MOKE CRM</div>
+        <div class="brand-subtitle">巧克力研发中心客户与风味反馈系统</div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+    </aside>
+    <section class="content">
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="pageTitle">Dashboard</h1>
+          <div class="page-kicker" id="pageKicker">客户、样品、商机与风味反馈总览</div>
+        </div>
+        <div class="top-actions" id="topActions"></div>
+      </header>
+      <main class="main" id="app"></main>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle"></div>
+        <button class="btn icon-only" id="modalClose" title="关闭" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./moke-crm-imported-data.js"></script>
+  <script>
+    const STORAGE_KEY = "moke-crm-mvp-v01";
+    const IMPORTED_DATASET_MARKER_KEY = `${STORAGE_KEY}-imported-dataset`;
+    const DATA_MODES = {
+      small: "Small Demo",
+      full: "Full Demo",
+      custom: "Custom Local Data"
+    };
+    const today = new Date("2026-06-10T09:00:00+12:00");
+
+    const enums = {
+      customerType: ["Distributor", "Retailer", "Bakery", "Cafe", "Hotel", "Corporate Gift", "End Consumer", "Other"],
+      customerStatus: ["Potential", "Active", "Converted", "Lost", "Dormant"],
+      customerLevel: ["A", "B", "C"],
+      decisionRole: ["Owner", "Buyer", "Product Manager", "R&D", "Store Manager", "Marketing", "Other"],
+      productStatus: ["Concept", "Sample", "Testing", "Launched", "Discontinued"],
+      flavorDimension: ["Texture", "Aroma", "Taste"],
+      sampleStatus: ["Prepared", "Sent", "Received", "Tasted", "Feedback Received", "No Response"],
+      opportunityStage: ["Lead", "Contacted", "Interested", "Sample Sent", "Testing", "Quoted", "Trial Order", "Regular Order", "Repeat Order", "Lost"],
+      quoteStatus: ["Draft", "Sent", "Accepted", "Rejected", "Expired"],
+      paymentStatus: ["Unpaid", "Partial", "Paid"],
+      deliveryStatus: ["Not Shipped", "Shipped", "Delivered", "Completed"],
+      interactionType: ["Email", "WeChat", "Phone", "Meeting", "Visit", "Sampling", "Other"],
+      sweetnessFeedback: ["Too Low", "Slightly Low", "Just Right", "Slightly High", "Too High"],
+      priceAcceptance: ["Too Expensive", "Acceptable", "Good Value", "Premium Acceptable"],
+      syncStatus: ["not_synced", "synced", "failed"],
+      currency: ["CNY", "NZD", "USD", "EUR"]
+    };
+
+    const navItems = [
+      { id: "dashboard", label: "Dashboard", kicker: "客户、样品、商机与风味反馈总览", icon: "layout" },
+      { id: "customers", label: "Customers", table: "customers", kicker: "客户资料、联系人、交易与口味画像", icon: "users" },
+      { id: "contacts", label: "Contacts", table: "contacts", kicker: "联系人与决策角色", icon: "contact" },
+      { id: "products", label: "Products", table: "products", kicker: "产品资料、风味画像与反馈表现", icon: "box" },
+      { id: "flavor_tags", label: "Flavor Tags", table: "flavorTags", kicker: "Texture / Aroma / Taste 标签字典", icon: "tag" },
+      { id: "product_flavor_scores", label: "Flavor Profiles", table: "productFlavorScores", kicker: "产品风味强度评分与类型生成", icon: "sliders" },
+      { id: "samples", label: "Samples", table: "samples", kicker: "寄样、收样和待反馈提醒", icon: "send" },
+      { id: "opportunities", label: "Opportunities", table: "opportunities", kicker: "商机阶段、预计金额与下一步动作", icon: "funnel" },
+      { id: "quotes", label: "Quotes", table: "quotes", kicker: "报价状态、有效期与订单转化", icon: "file" },
+      { id: "orders", label: "Orders", table: "orders", kicker: "订单金额、毛利、付款和交付", icon: "cart" },
+      { id: "interactions", label: "Interactions", table: "interactions", kicker: "客户跟进记录与下次动作", icon: "message" },
+      { id: "feedback", label: "Feedback", table: "customerFeedback", kicker: "试吃反馈、购买意愿与风味标签", icon: "star" },
+      { id: "taste_profiles", label: "Taste Profiles", table: "customerTasteProfiles", kicker: "由反馈自动汇总的客户口味画像", icon: "profile" },
+      { id: "import_export", label: "Import / Export", kicker: "CSV 导入导出与 Tier0 预留字段", icon: "download" }
+    ];
+
+    const tableMeta = {
+      customers: {
+        id: "customer_id",
+        title: "客户",
+        singular: "客户",
+        search: ["customer_name", "customer_type", "country", "city", "owner", "status", "notes"],
+        columns: [
+          ["customer_name", "客户名称"],
+          ["customer_type", "类型"],
+          ["country", "国家"],
+          ["city", "城市"],
+          ["customer_level", "等级"],
+          ["status", "状态"],
+          ["owner", "负责人"],
+          ["sync_status", "Tier0"]
+        ],
+        fields: [
+          field("customer_name", "客户名称", "text", true),
+          field("customer_type", "客户类型", "select", true, "customerType"),
+          field("country", "国家"),
+          field("city", "城市"),
+          field("source_channel", "客户来源"),
+          field("customer_level", "客户等级", "select", true, "customerLevel"),
+          field("status", "客户状态", "select", true, "customerStatus"),
+          field("owner", "负责人"),
+          field("notes", "备注", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      contacts: {
+        id: "contact_id",
+        title: "联系人",
+        singular: "联系人",
+        search: ["contact_name", "position", "phone", "email", "wechat", "decision_role"],
+        columns: [
+          ["contact_name", "联系人"],
+          ["customer_id", "客户"],
+          ["position", "职位"],
+          ["phone", "电话"],
+          ["email", "邮箱"],
+          ["decision_role", "角色"],
+          ["is_primary_contact", "主联系人"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          field("contact_name", "联系人姓名", "text", true),
+          field("position", "职位"),
+          field("phone", "电话"),
+          field("email", "邮箱"),
+          field("wechat", "微信"),
+          field("decision_role", "决策角色", "select", true, "decisionRole"),
+          field("is_primary_contact", "是否主联系人", "checkbox"),
+          field("notes", "备注", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      products: {
+        id: "product_id",
+        title: "产品",
+        singular: "产品",
+        search: ["product_name", "sku", "product_line", "product_status", "description"],
+        columns: [
+          ["product_name", "产品名称"],
+          ["sku", "SKU"],
+          ["product_line", "产品线"],
+          ["cacao_percentage", "可可含量"],
+          ["product_status", "状态"],
+          ["generated_type", "风味类型"]
+        ],
+        fields: [
+          field("product_name", "产品名称", "text", true),
+          field("sku", "SKU"),
+          field("product_line", "产品线"),
+          field("cacao_percentage", "可可含量"),
+          field("product_status", "产品状态", "select", true, "productStatus"),
+          field("description", "产品描述", "textarea"),
+          field("generated_type", "产品风味类型"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      flavorTags: {
+        id: "tag_id",
+        title: "风味标签",
+        singular: "风味标签",
+        search: ["dimension", "tag_name_cn", "tag_name_en", "definition"],
+        columns: [
+          ["dimension", "维度"],
+          ["tag_name_cn", "中文标签"],
+          ["tag_name_en", "英文标签"],
+          ["definition", "定义"],
+          ["is_core_tag", "核心"]
+        ],
+        fields: [
+          field("dimension", "标签维度", "select", true, "flavorDimension"),
+          field("tag_name_cn", "中文标签名", "text", true),
+          field("tag_name_en", "英文标签名", "text", true),
+          field("definition", "标签定义", "textarea"),
+          field("scale_0", "0 分定义"),
+          field("scale_3", "3 分定义"),
+          field("scale_5", "5 分定义"),
+          field("is_core_tag", "是否核心标签", "checkbox"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      productFlavorScores: {
+        id: "score_id",
+        title: "产品风味画像",
+        singular: "风味评分",
+        search: ["product_id", "tag_id", "evaluator", "notes"],
+        columns: [
+          ["product_id", "产品"],
+          ["tag_id", "风味标签"],
+          ["score", "评分"],
+          ["is_primary_tag", "主标签"],
+          ["is_secondary_tag", "副标签"],
+          ["evaluator", "评分人"],
+          ["evaluation_date", "评分日期"]
+        ],
+        fields: [
+          relationField("product_id", "产品", "products", "product_name", true),
+          relationField("tag_id", "风味标签", "flavorTags", "tag_name_cn", true),
+          field("score", "感知强度 0-5", "number", true),
+          field("is_primary_tag", "是否主标签", "checkbox"),
+          field("is_secondary_tag", "是否副标签", "checkbox"),
+          field("evaluator", "评分人"),
+          field("evaluation_date", "评分日期", "date"),
+          field("notes", "备注", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      samples: {
+        id: "sample_id",
+        title: "样品",
+        singular: "样品",
+        search: ["sample_batch", "sample_status", "logistics_info", "notes"],
+        columns: [
+          ["sample_id", "样品 ID"],
+          ["customer_id", "客户"],
+          ["product_id", "产品"],
+          ["sample_batch", "批次"],
+          ["sample_quantity", "数量"],
+          ["sent_date", "寄出"],
+          ["sample_status", "状态"],
+          ["feedback_due_date", "反馈日期"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          relationField("contact_id", "联系人", "contacts", "contact_name"),
+          relationField("product_id", "产品", "products", "product_name", true),
+          field("sample_batch", "样品批次"),
+          field("sample_quantity", "样品数量", "number"),
+          field("sent_date", "寄出日期", "date"),
+          field("received_date", "客户收到日期", "date"),
+          field("sample_status", "样品状态", "select", true, "sampleStatus"),
+          field("feedback_due_date", "预计反馈日期", "date"),
+          field("logistics_info", "物流信息"),
+          field("notes", "备注", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      opportunities: {
+        id: "opportunity_id",
+        title: "商机",
+        singular: "商机",
+        search: ["product_interest", "stage", "next_action", "lost_reason", "owner"],
+        columns: [
+          ["customer_id", "客户"],
+          ["product_interest", "感兴趣产品"],
+          ["stage", "阶段"],
+          ["expected_value", "预计金额"],
+          ["probability", "概率"],
+          ["next_action", "下一步"],
+          ["next_follow_up_date", "跟进日期"],
+          ["owner", "负责人"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          field("product_interest", "感兴趣产品"),
+          field("stage", "商机阶段", "select", true, "opportunityStage"),
+          field("expected_value", "预计金额", "number"),
+          field("probability", "成交概率", "number"),
+          field("next_action", "下一步动作"),
+          field("next_follow_up_date", "下次跟进日期", "date"),
+          field("lost_reason", "流失原因"),
+          field("owner", "负责人"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      quotes: {
+        id: "quote_id",
+        title: "报价",
+        singular: "报价",
+        search: ["quote_status", "currency", "notes"],
+        columns: [
+          ["quote_id", "报价 ID"],
+          ["customer_id", "客户"],
+          ["product_id", "产品"],
+          ["opportunity_id", "商机"],
+          ["quantity", "数量"],
+          ["unit_price", "单价"],
+          ["currency", "币种"],
+          ["quote_status", "状态"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          relationField("product_id", "产品", "products", "product_name", true),
+          relationField("opportunity_id", "商机", "opportunities", "stage"),
+          field("quantity", "数量", "number"),
+          field("unit_price", "单价", "number"),
+          field("currency", "币种", "select", true, "currency"),
+          field("valid_until", "有效期", "date"),
+          field("quote_status", "报价状态", "select", true, "quoteStatus"),
+          field("notes", "备注", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      orders: {
+        id: "order_id",
+        title: "订单",
+        singular: "订单",
+        search: ["payment_status", "delivery_status"],
+        columns: [
+          ["order_id", "订单 ID"],
+          ["customer_id", "客户"],
+          ["product_id", "产品"],
+          ["quantity", "数量"],
+          ["total_value", "金额"],
+          ["gross_margin", "毛利率"],
+          ["payment_status", "付款"],
+          ["delivery_status", "交付"],
+          ["repeat_order_flag", "复购"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          relationField("product_id", "产品", "products", "product_name", true),
+          relationField("opportunity_id", "商机", "opportunities", "stage"),
+          relationField("quote_id", "报价", "quotes", "quote_id"),
+          field("quantity", "数量", "number"),
+          field("total_value", "金额", "number"),
+          field("gross_margin", "毛利率", "number"),
+          field("payment_status", "付款状态", "select", true, "paymentStatus"),
+          field("delivery_status", "交付状态", "select", true, "deliveryStatus"),
+          field("repeat_order_flag", "是否复购", "checkbox"),
+          field("order_date", "订单日期", "date"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      interactions: {
+        id: "interaction_id",
+        title: "跟进记录",
+        singular: "跟进",
+        search: ["interaction_type", "content", "next_action", "owner"],
+        columns: [
+          ["customer_id", "客户"],
+          ["contact_id", "联系人"],
+          ["opportunity_id", "商机"],
+          ["interaction_type", "类型"],
+          ["interaction_date", "日期"],
+          ["content", "内容"],
+          ["next_action", "下一步"],
+          ["owner", "负责人"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          relationField("contact_id", "联系人", "contacts", "contact_name"),
+          relationField("opportunity_id", "商机", "opportunities", "stage"),
+          field("interaction_type", "跟进类型", "select", true, "interactionType"),
+          field("interaction_date", "跟进日期", "date"),
+          field("content", "内容", "textarea"),
+          field("next_action", "下一步动作"),
+          field("next_follow_up_date", "下次跟进日期", "date"),
+          field("owner", "负责人"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      customerFeedback: {
+        id: "feedback_id",
+        title: "客户反馈",
+        singular: "反馈",
+        search: ["sweetness_feedback", "texture_feedback", "aroma_feedback", "price_acceptance", "comment"],
+        columns: [
+          ["customer_id", "客户"],
+          ["product_id", "产品"],
+          ["sample_id", "样品"],
+          ["tasting_date", "试吃日期"],
+          ["overall_liking", "喜欢"],
+          ["purchase_intent", "购买意愿"],
+          ["liked_tags", "喜欢标签"],
+          ["disliked_tags", "不喜欢标签"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          relationField("contact_id", "联系人", "contacts", "contact_name"),
+          relationField("product_id", "产品", "products", "product_name", true),
+          relationField("sample_id", "样品", "samples", "sample_id"),
+          field("tasting_date", "试吃日期", "date"),
+          field("overall_liking", "总体喜欢程度 1-5", "number", true),
+          field("purchase_intent", "购买意愿 1-5", "number", true),
+          tagMultiField("liked_tags", "喜欢的风味标签"),
+          tagMultiField("disliked_tags", "不喜欢的风味标签"),
+          field("sweetness_feedback", "甜度反馈", "select", true, "sweetnessFeedback"),
+          field("texture_feedback", "口感反馈"),
+          field("aroma_feedback", "香气反馈"),
+          field("price_acceptance", "价格接受度", "select", true, "priceAcceptance"),
+          field("comment", "原始评论", "textarea"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      },
+      customerTasteProfiles: {
+        id: "profile_id",
+        title: "客户口味画像",
+        singular: "口味画像",
+        search: ["customer_id", "preferred_texture_tags", "preferred_aroma_tags", "preferred_taste_tags", "disliked_tags"],
+        columns: [
+          ["customer_id", "客户"],
+          ["preferred_texture_tags", "偏好口感"],
+          ["preferred_aroma_tags", "偏好香气"],
+          ["preferred_taste_tags", "偏好味觉"],
+          ["disliked_tags", "不喜欢"],
+          ["recommended_products", "推荐产品"],
+          ["confidence_score", "可信度"]
+        ],
+        fields: [
+          relationField("customer_id", "客户", "customers", "customer_name", true),
+          tagMultiField("preferred_texture_tags", "偏好口感"),
+          tagMultiField("preferred_aroma_tags", "偏好香气"),
+          tagMultiField("preferred_taste_tags", "偏好味觉"),
+          tagMultiField("disliked_tags", "不喜欢的风味标签"),
+          relationMultiField("recommended_products", "推荐产品", "products", "product_name"),
+          relationMultiField("not_recommended_products", "不优先推荐产品", "products", "product_name"),
+          field("confidence_score", "画像可信度", "number"),
+          field("last_updated", "最后更新", "date"),
+          systemField("source_system"),
+          systemField("sync_status", "select", "syncStatus"),
+          systemField("external_id")
+        ]
+      }
+    };
+
+    function field(key, label, type = "text", required = false, enumKey = null) {
+      return { key, label, type, required, enumKey };
+    }
+
+    function systemField(key, type = "text", enumKey = null) {
+      const labels = { source_system: "来源系统", sync_status: "Tier0 同步状态", external_id: "外部 ID" };
+      return { key, label: labels[key] || key, type, enumKey, system: true };
+    }
+
+    function relationField(key, label, table, labelKey, required = false) {
+      return { key, label, type: "relation", table, labelKey, required };
+    }
+
+    function relationMultiField(key, label, table, labelKey) {
+      return { key, label, type: "relationMulti", table, labelKey };
+    }
+
+    function tagMultiField(key, label) {
+      return { key, label, type: "tagMulti" };
+    }
+
+    function icon(name) {
+      const icons = {
+        layout: "<svg viewBox='0 0 24 24'><rect x='3' y='3' width='7' height='7'/><rect x='14' y='3' width='7' height='7'/><rect x='3' y='14' width='18' height='7'/></svg>",
+        users: "<svg viewBox='0 0 24 24'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>",
+        contact: "<svg viewBox='0 0 24 24'><path d='M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2'/><rect x='3' y='4' width='18' height='18' rx='2'/><circle cx='12' cy='10' r='2'/><path d='M8 2v4'/><path d='M16 2v4'/></svg>",
+        box: "<svg viewBox='0 0 24 24'><path d='m21 8-9-5-9 5 9 5 9-5Z'/><path d='M3 8v8l9 5 9-5V8'/><path d='M12 13v8'/></svg>",
+        tag: "<svg viewBox='0 0 24 24'><path d='M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82Z'/><circle cx='7.5' cy='7.5' r='.5'/></svg>",
+        sliders: "<svg viewBox='0 0 24 24'><path d='M4 21v-7'/><path d='M4 10V3'/><path d='M12 21v-9'/><path d='M12 8V3'/><path d='M20 21v-5'/><path d='M20 12V3'/><path d='M2 14h4'/><path d='M10 8h4'/><path d='M18 16h4'/></svg>",
+        send: "<svg viewBox='0 0 24 24'><path d='m22 2-7 20-4-9-9-4Z'/><path d='M22 2 11 13'/></svg>",
+        funnel: "<svg viewBox='0 0 24 24'><path d='M3 4h18l-7 8v6l-4 2v-8Z'/></svg>",
+        file: "<svg viewBox='0 0 24 24'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z'/><path d='M14 2v6h6'/><path d='M8 13h8'/><path d='M8 17h8'/></svg>",
+        cart: "<svg viewBox='0 0 24 24'><circle cx='8' cy='21' r='1'/><circle cx='19' cy='21' r='1'/><path d='M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12'/></svg>",
+        message: "<svg viewBox='0 0 24 24'><path d='M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z'/></svg>",
+        star: "<svg viewBox='0 0 24 24'><path d='m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01Z'/></svg>",
+        profile: "<svg viewBox='0 0 24 24'><path d='M20 21a8 8 0 0 0-16 0'/><circle cx='12' cy='7' r='4'/><path d='M12 11v4'/><path d='M9 14h6'/></svg>",
+        download: "<svg viewBox='0 0 24 24'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><path d='M7 10l5 5 5-5'/><path d='M12 15V3'/></svg>",
+        plus: "<svg viewBox='0 0 24 24'><path d='M5 12h14'/><path d='M12 5v14'/></svg>",
+        edit: "<svg viewBox='0 0 24 24'><path d='M12 20h9'/><path d='M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z'/></svg>",
+        trash: "<svg viewBox='0 0 24 24'><path d='M3 6h18'/><path d='M8 6V4h8v2'/><path d='M19 6l-1 14H6L5 6'/></svg>",
+        close: "<svg viewBox='0 0 24 24'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg>",
+        search: "<svg viewBox='0 0 24 24'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>",
+        refresh: "<svg viewBox='0 0 24 24'><path d='M21 12a9 9 0 0 0-15-6.7L3 8'/><path d='M3 3v5h5'/><path d='M3 12a9 9 0 0 0 15 6.7l3-2.7'/><path d='M21 21v-5h-5'/></svg>",
+        upload: "<svg viewBox='0 0 24 24'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><path d='m17 8-5-5-5 5'/><path d='M12 3v12'/></svg>"
+      };
+      return `<span class="icon" aria-hidden="true">${icons[name] || icons.layout}</span>`;
+    }
+
+    function baseRecord(extra = {}) {
+      return {
+        source_system: "MOKE_CRM",
+        sync_status: "not_synced",
+        external_id: "",
+        created_at: iso(today),
+        updated_at: iso(today),
+        ...extra
+      };
+    }
+
+    function iso(date) {
+      if (date instanceof Date) return date.toISOString().slice(0, 10);
+      return date;
+    }
+
+    function datePlus(days) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + days);
+      return iso(d);
+    }
+
+    function makeId(prefix, index) {
+      return `${prefix}-${String(index).padStart(4, "0")}`;
+    }
+
+    const seed = (() => {
+      const customers = [
+        baseRecord({ customer_id: "CUS-0001", customer_name: "Auckland Artisan Foods", customer_type: "Distributor", country: "New Zealand", city: "Auckland", source_channel: "Trade Show", customer_level: "A", status: "Active", owner: "小翟", notes: "关注高端礼盒和海盐坚果风味。" }),
+        baseRecord({ customer_id: "CUS-0002", customer_name: "Sweet Lab Shanghai", customer_type: "Retailer", country: "China", city: "Shanghai", source_channel: "Referral", customer_level: "A", status: "Converted", owner: "小翟", notes: "偏好低甜、包装高级感。" }),
+        baseRecord({ customer_id: "CUS-0003", customer_name: "Bean & Bake Studio", customer_type: "Bakery", country: "China", city: "Hangzhou", source_channel: "Xiaohongshu", customer_level: "B", status: "Active", owner: "Mia", notes: "用于烘焙夹心测试。" }),
+        baseRecord({ customer_id: "CUS-0004", customer_name: "Harbour Cafe Group", customer_type: "Cafe", country: "New Zealand", city: "Wellington", source_channel: "Email", customer_level: "B", status: "Potential", owner: "Ethan", notes: "想要咖啡搭配巧克力。" }),
+        baseRecord({ customer_id: "CUS-0005", customer_name: "Yuzu Gift Co.", customer_type: "Corporate Gift", country: "Japan", city: "Tokyo", source_channel: "Trade Show", customer_level: "A", status: "Active", owner: "小翟", notes: "关注白巧柚子和季节限定。" }),
+        baseRecord({ customer_id: "CUS-0006", customer_name: "Cacao North Hotel", customer_type: "Hotel", country: "China", city: "Chengdu", source_channel: "Visit", customer_level: "B", status: "Active", owner: "Nora", notes: "房间欢迎礼巧克力。" }),
+        baseRecord({ customer_id: "CUS-0007", customer_name: "City Mart Premium", customer_type: "Retailer", country: "Singapore", city: "Singapore", source_channel: "LinkedIn", customer_level: "C", status: "Potential", owner: "Ethan", notes: "先看样品反馈。" }),
+        baseRecord({ customer_id: "CUS-0008", customer_name: "Dark Origin Club", customer_type: "End Consumer", country: "China", city: "Beijing", source_channel: "Community", customer_level: "B", status: "Converted", owner: "Mia", notes: "黑巧爱好者社群。" }),
+        baseRecord({ customer_id: "CUS-0009", customer_name: "Southern Pantry", customer_type: "Distributor", country: "Australia", city: "Melbourne", source_channel: "Email", customer_level: "C", status: "Dormant", owner: "Nora", notes: "需要重新激活。" }),
+        baseRecord({ customer_id: "CUS-0010", customer_name: "MOKA Bakery Chain", customer_type: "Bakery", country: "China", city: "Shenzhen", source_channel: "Referral", customer_level: "A", status: "Active", owner: "小翟", notes: "对树莓巧克力有兴趣。" })
+      ];
+
+      const contacts = [
+        ["CON-0001", "CUS-0001", "Grace Miller", "Category Director", "+64 21 100 001", "grace@artisan.example", "grace-moke", "Buyer", true],
+        ["CON-0002", "CUS-0001", "Leo Brooks", "Product Lead", "+64 21 100 002", "leo@artisan.example", "leo-cocoa", "Product Manager", false],
+        ["CON-0003", "CUS-0002", "陈薇", "采购负责人", "13800010001", "chenwei@sweetlab.example", "chenwei-lab", "Buyer", true],
+        ["CON-0004", "CUS-0002", "唐宁", "市场经理", "13800010002", "tangning@sweetlab.example", "tn-market", "Marketing", false],
+        ["CON-0005", "CUS-0003", "林舟", "研发厨师", "13800010003", "linzhou@beanbake.example", "lin-bake", "R&D", true],
+        ["CON-0006", "CUS-0004", "Amelia Hart", "Store Manager", "+64 21 100 006", "amelia@harbour.example", "amelia-h", "Store Manager", true],
+        ["CON-0007", "CUS-0005", "Sora Tanaka", "Founder", "+81 90 1000 0007", "sora@yuzugift.example", "sora-yuzu", "Owner", true],
+        ["CON-0008", "CUS-0005", "Mika Ito", "Buyer", "+81 90 1000 0008", "mika@yuzugift.example", "mika-gift", "Buyer", false],
+        ["CON-0009", "CUS-0006", "周岚", "酒店采购", "13800010009", "zhoulan@cacaonorth.example", "zl-hotel", "Buyer", true],
+        ["CON-0010", "CUS-0007", "Ivy Lim", "Premium Buyer", "+65 9000 0010", "ivy@citymart.example", "ivy-city", "Buyer", true],
+        ["CON-0011", "CUS-0008", "顾明", "社群主理人", "13800010011", "guming@darkorigin.example", "gm-dark", "Owner", true],
+        ["CON-0012", "CUS-0009", "Olivia Stone", "Sales Lead", "+61 400 000 012", "olivia@southernpantry.example", "olivia-sp", "Buyer", true],
+        ["CON-0013", "CUS-0010", "赵梨", "产品经理", "13800010013", "zhaoli@mokabakery.example", "zl-bakery", "Product Manager", true],
+        ["CON-0014", "CUS-0010", "许恬", "研发", "13800010014", "xutian@mokabakery.example", "xt-rd", "R&D", false],
+        ["CON-0015", "CUS-0006", "Noah King", "Executive Chef", "+64 21 100 015", "noah@cacaonorth.example", "noah-chef", "R&D", false]
+      ].map(([contact_id, customer_id, contact_name, position, phone, email, wechat, decision_role, is_primary_contact]) =>
+        baseRecord({ contact_id, customer_id, contact_name, position, phone, email, wechat, decision_role, is_primary_contact, notes: "" })
+      );
+
+      const products = [
+        baseRecord({ product_id: "PRO-0001", product_name: "海盐开心果巧克力", sku: "MOKE-PST-SEA-45", product_line: "Nut Collection", cacao_percentage: "45%", product_status: "Testing", description: "开心果碎与海盐平衡，适合礼盒和咖啡搭配。", generated_type: "坚果脆感 - 可可坚果香 - 微咸微甜型" }),
+        baseRecord({ product_id: "PRO-0002", product_name: "100% 委内瑞拉黑巧", sku: "MOKE-VEN-100", product_line: "Origin Dark", cacao_percentage: "100%", product_status: "Sample", description: "纯可可、强苦度、长余味。", generated_type: "厚重顺滑 - 强可可焙烤香 - 高苦长余味型" }),
+        baseRecord({ product_id: "PRO-0003", product_name: "白巧柚子", sku: "MOKE-WHT-YUZU", product_line: "Fruit White", cacao_percentage: "0%", product_status: "Testing", description: "白巧奶香与柚子果香。", generated_type: "顺滑奶油感 - 柑橘果香 - 中甜清爽型" }),
+        baseRecord({ product_id: "PRO-0004", product_name: "61% 牛奶巧克力", sku: "MOKE-MILK-61", product_line: "Milk Classic", cacao_percentage: "61%", product_status: "Launched", description: "中高可可含量牛奶巧克力。", generated_type: "顺滑奶油感 - 可可奶香 - 中甜轻苦型" }),
+        baseRecord({ product_id: "PRO-0005", product_name: "树莓巧克力", sku: "MOKE-RSP-55", product_line: "Fruit Dark", cacao_percentage: "55%", product_status: "Testing", description: "树莓酸甜与黑巧可可香。", generated_type: "顺滑果感 - 树莓果香可可香 - 酸甜型" })
+      ];
+
+      const tagSeed = [
+        ["TAG-0001", "Texture", "脆感", "Crunchy", "咀嚼时产生清晰断裂和颗粒脆响。"],
+        ["TAG-0002", "Texture", "顺滑", "Smooth", "入口质地细腻、无明显颗粒。"],
+        ["TAG-0003", "Texture", "奶油感", "Creamy", "脂肪感柔和，口腔包裹感明显。"],
+        ["TAG-0004", "Texture", "颗粒感", "Grainy", "可感知细小颗粒或粉感。"],
+        ["TAG-0005", "Texture", "厚重感", "Rich / Heavy", "质地浓稠、饱满、有重量感。"],
+        ["TAG-0006", "Texture", "融化速度", "Melt Speed", "入口后融化快慢。"],
+        ["TAG-0007", "Aroma", "可可香", "Cocoa", "典型可可豆香气。"],
+        ["TAG-0008", "Aroma", "坚果香", "Nutty", "开心果、榛子、杏仁等坚果香。"],
+        ["TAG-0009", "Aroma", "奶香", "Milky", "乳制品香气。"],
+        ["TAG-0010", "Aroma", "果香", "Fruity", "莓果、柑橘、热带水果等果香。"],
+        ["TAG-0011", "Aroma", "焦糖香", "Caramel", "焦糖、太妃糖、糖化香。"],
+        ["TAG-0012", "Aroma", "焙烤香", "Roasted", "烘烤、烤坚果、咖啡式香气。"],
+        ["TAG-0013", "Taste", "甜度", "Sweetness", "基础甜味强度。"],
+        ["TAG-0014", "Taste", "苦度", "Bitterness", "可可碱与深烘带来的苦味。"],
+        ["TAG-0015", "Taste", "酸度", "Acidity", "水果酸或发酵酸感。"],
+        ["TAG-0016", "Taste", "咸度", "Saltiness", "盐味强度。"],
+        ["TAG-0017", "Taste", "涩感", "Astringency", "口腔收敛、干涩感。"],
+        ["TAG-0018", "Taste", "余味", "Aftertaste", "吞咽后风味停留强度和时长。"]
+      ];
+      const flavorTags = tagSeed.map(([tag_id, dimension, tag_name_cn, tag_name_en, definition]) => baseRecord({
+        tag_id,
+        dimension,
+        tag_name_cn,
+        tag_name_en,
+        definition,
+        scale_0: "没有感知",
+        scale_3: "明确存在",
+        scale_5: "主导特征",
+        is_core_tag: true
+      }));
+
+      const profileMatrix = {
+        "PRO-0001": [["TAG-0001", 4.7], ["TAG-0002", 3.2], ["TAG-0008", 4.6], ["TAG-0007", 3.8], ["TAG-0013", 2.8], ["TAG-0016", 2.1], ["TAG-0014", 2.9]],
+        "PRO-0002": [["TAG-0005", 4.8], ["TAG-0002", 3.7], ["TAG-0007", 4.9], ["TAG-0012", 4.2], ["TAG-0014", 4.7], ["TAG-0017", 3.4], ["TAG-0018", 4.6]],
+        "PRO-0003": [["TAG-0002", 4.3], ["TAG-0003", 4.4], ["TAG-0009", 4.5], ["TAG-0010", 4.1], ["TAG-0013", 3.6], ["TAG-0015", 2.4], ["TAG-0018", 3.0]],
+        "PRO-0004": [["TAG-0002", 4.6], ["TAG-0003", 4.2], ["TAG-0007", 4.0], ["TAG-0009", 4.3], ["TAG-0011", 3.1], ["TAG-0013", 3.2], ["TAG-0014", 2.5]],
+        "PRO-0005": [["TAG-0002", 4.0], ["TAG-0010", 4.7], ["TAG-0007", 3.6], ["TAG-0015", 3.8], ["TAG-0013", 3.1], ["TAG-0014", 2.8], ["TAG-0018", 3.4]]
+      };
+      let scoreIndex = 1;
+      const productFlavorScores = Object.entries(profileMatrix).flatMap(([product_id, scores]) => scores.map(([tag_id, score]) => baseRecord({
+        score_id: makeId("PFS", scoreIndex++),
+        product_id,
+        tag_id,
+        score,
+        is_primary_tag: score >= 4,
+        is_secondary_tag: score >= 3 && score < 4,
+        evaluator: scoreIndex % 2 ? "R&D Center" : "小翟",
+        evaluation_date: datePlus(-34 + scoreIndex),
+        notes: ""
+      })));
+
+      const samples = Array.from({ length: 15 }, (_, i) => {
+        const n = i + 1;
+        const customer_id = customers[i % customers.length].customer_id;
+        const contact = contacts.find(c => c.customer_id === customer_id) || contacts[0];
+        const product_id = products[i % products.length].product_id;
+        const sent = datePlus(-28 + i * 2);
+        const status = ["Feedback Received", "Tasted", "Received", "Sent", "Feedback Received"][i % 5];
+        return baseRecord({
+          sample_id: makeId("SAM", n),
+          customer_id,
+          contact_id: contact.contact_id,
+          product_id,
+          sample_batch: `BATCH-26${String(40 + n).padStart(3, "0")}`,
+          sample_quantity: [6, 12, 24, 8, 10][i % 5],
+          sent_date: sent,
+          received_date: status === "Sent" ? "" : datePlus(-25 + i * 2),
+          sample_status: status,
+          feedback_due_date: datePlus(-21 + i * 2),
+          logistics_info: `TRACK-${26000 + n}`,
+          notes: ""
+        });
+      });
+
+      const opportunities = Array.from({ length: 20 }, (_, i) => {
+        const n = i + 1;
+        const customer = customers[i % customers.length];
+        const product = products[(i + 1) % products.length];
+        const stages = enums.opportunityStage;
+        return baseRecord({
+          opportunity_id: makeId("OPP", n),
+          customer_id: customer.customer_id,
+          product_interest: product.product_name,
+          stage: stages[i % (stages.length - 1)],
+          expected_value: [8000, 15000, 26000, 42000, 12000][i % 5],
+          probability: [15, 25, 40, 55, 70, 85][i % 6],
+          next_action: ["安排试吃反馈", "发送报价", "确认包装规格", "预约产品会议", "跟进复购"][i % 5],
+          next_follow_up_date: datePlus(1 + (i % 9)),
+          lost_reason: "",
+          owner: customer.owner
+        });
+      });
+
+      const quotes = Array.from({ length: 10 }, (_, i) => {
+        const n = i + 1;
+        const opp = opportunities[i * 2];
+        const product = products[i % products.length];
+        return baseRecord({
+          quote_id: makeId("QUO", n),
+          customer_id: opp.customer_id,
+          product_id: product.product_id,
+          opportunity_id: opp.opportunity_id,
+          quantity: [200, 500, 1000, 300, 800][i % 5],
+          unit_price: [8.8, 13.5, 18.0, 9.2, 12.6][i % 5],
+          currency: i % 3 === 0 ? "NZD" : "CNY",
+          valid_until: datePlus(12 + i),
+          quote_status: ["Sent", "Accepted", "Draft", "Rejected", "Expired"][i % 5],
+          notes: ""
+        });
+      });
+
+      const orders = Array.from({ length: 5 }, (_, i) => {
+        const n = i + 1;
+        const quote = quotes[i * 2] || quotes[i];
+        return baseRecord({
+          order_id: makeId("ORD", n),
+          customer_id: quote.customer_id,
+          product_id: quote.product_id,
+          opportunity_id: quote.opportunity_id,
+          quote_id: quote.quote_id,
+          quantity: quote.quantity,
+          total_value: Math.round(quote.quantity * quote.unit_price),
+          gross_margin: [28, 31, 26, 34, 29][i],
+          payment_status: ["Paid", "Partial", "Paid", "Unpaid", "Paid"][i],
+          delivery_status: ["Completed", "Delivered", "Shipped", "Not Shipped", "Completed"][i],
+          repeat_order_flag: i === 1 || i === 4,
+          order_date: datePlus(-14 + i * 3)
+        });
+      });
+
+      const comments = [
+        "坚果香明显，海盐让整体更高级，适合作为礼盒主推。",
+        "100% 黑巧很有个性，但对普通客群太苦。",
+        "柚子香很清爽，白巧甜度稍高。",
+        "牛奶巧克力很稳，咖啡搭配不错。",
+        "树莓酸香有记忆点，年轻客群应该喜欢。",
+        "脆感很好，包装可以更强调开心果。",
+        "可可香够强，余味长，适合黑巧爱好者。",
+        "奶香顺滑，但希望甜度降低一点。",
+        "果香自然，酸度有辨识度。",
+        "口感偏厚重，适合小规格品鉴。"
+      ];
+      const customerFeedback = Array.from({ length: 30 }, (_, i) => {
+        const n = i + 1;
+        const sample = samples[i % samples.length];
+        const productScores = productFlavorScores.filter(s => s.product_id === sample.product_id).sort((a, b) => b.score - a.score);
+        const liked = productScores.slice(0, 2).map(s => s.tag_id);
+        const disliked = i % 4 === 0 ? productScores.slice(-1).map(s => s.tag_id) : [];
+        const overall = [5, 4, 3, 4, 2, 5, 4, 3, 5, 4][i % 10];
+        const intent = [5, 4, 3, 4, 2, 5, 3, 3, 4, 4][i % 10];
+        return baseRecord({
+          feedback_id: makeId("FDB", n),
+          customer_id: sample.customer_id,
+          contact_id: sample.contact_id,
+          product_id: sample.product_id,
+          sample_id: sample.sample_id,
+          tasting_date: datePlus(-20 + i),
+          overall_liking: overall,
+          purchase_intent: intent,
+          liked_tags: liked,
+          disliked_tags: disliked,
+          sweetness_feedback: ["Just Right", "Slightly High", "Just Right", "Slightly Low", "Too High"][i % 5],
+          texture_feedback: ["脆感清晰", "顺滑", "偏厚重", "奶油感好", "颗粒感可接受"][i % 5],
+          aroma_feedback: ["坚果香突出", "可可香强", "果香清爽", "奶香明显", "焙烤香长"][i % 5],
+          price_acceptance: ["Acceptable", "Premium Acceptable", "Good Value", "Acceptable", "Too Expensive"][i % 5],
+          comment: comments[i % comments.length]
+        });
+      });
+
+      const interactions = Array.from({ length: 18 }, (_, i) => {
+        const customer = customers[i % customers.length];
+        const contact = contacts.find(c => c.customer_id === customer.customer_id) || contacts[0];
+        const opp = opportunities.find(o => o.customer_id === customer.customer_id) || opportunities[0];
+        return baseRecord({
+          interaction_id: makeId("INT", i + 1),
+          customer_id: customer.customer_id,
+          contact_id: contact.contact_id,
+          opportunity_id: opp.opportunity_id,
+          interaction_type: enums.interactionType[i % enums.interactionType.length],
+          interaction_date: datePlus(-18 + i),
+          content: ["确认试吃安排", "沟通礼盒规格", "反馈甜度偏好", "讨论报价区间", "预约复盘会议"][i % 5],
+          next_action: ["等待反馈", "补发资料", "准备报价", "安排二次试吃", "确认订单量"][i % 5],
+          next_follow_up_date: datePlus(2 + (i % 8)),
+          owner: customer.owner
+        });
+      });
+
+      return {
+        customers,
+        contacts,
+        products,
+        flavorTags,
+        productFlavorScores,
+        samples,
+        opportunities,
+        quotes,
+        orders,
+        interactions,
+        customerFeedback,
+        customerTasteProfiles: []
+      };
+    })();
+
+    let state = loadState();
+    let currentView = "dashboard";
+    let currentTab = "overview";
+    let selectedId = null;
+    let searchTerm = "";
+    let filters = {};
+    let importWizardPreview = null;
+    const IMPORT_UNDO_KEY = `${STORAGE_KEY}-last-import-undo`;
+
+    const importTables = ["customers", "contacts", "products", "samples", "opportunities", "quotes", "orders", "interactions", "customerFeedback"];
+    const sheetAliases = {
+      customers: ["customers", "customer", "客户", "客户表", "客户资料", "客户主数据", "客户信息"],
+      contacts: ["contacts", "contact", "联系人", "联系人表", "客户联系人"],
+      products: ["products", "product", "产品", "产品表", "产品资料", "sku"],
+      samples: ["samples", "sample", "样品", "样品表", "寄样", "寄样记录"],
+      opportunities: ["opportunities", "opportunity", "商机", "商机表", "销售机会"],
+      quotes: ["quotes", "quote", "报价", "报价表", "报价单"],
+      orders: ["orders", "order", "订单", "订单表"],
+      interactions: ["interactions", "interaction", "跟进", "跟进记录", "拜访记录", "沟通记录"],
+      customerFeedback: ["customer_feedback", "feedback", "customer feedback", "客户反馈", "反馈", "试吃反馈", "风味反馈"],
+      flavorTags: ["flavor_tags", "flavor tags", "tags", "风味标签", "标签库"],
+      productFlavorScores: ["product_flavor_scores", "flavor profiles", "product flavor scores", "产品风味评分", "产品风味画像", "风味评分"]
+    };
+
+    const fieldAliases = {
+      customer_id: ["customer_id", "customer id", "客户id", "客户编号", "客户编码"],
+      customer_name: ["customer_name", "customer", "customer name", "客户名称", "客户名", "公司名称", "公司名", "客户"],
+      customer_type: ["customer_type", "客户类型", "类型"],
+      country: ["country", "国家", "市场"],
+      city: ["city", "城市"],
+      source_channel: ["source_channel", "来源", "客户来源", "获客渠道"],
+      customer_level: ["customer_level", "客户等级", "等级"],
+      status: ["status", "客户状态", "状态"],
+      owner: ["owner", "负责人", "销售", "跟进人"],
+      notes: ["notes", "备注", "说明"],
+      contact_id: ["contact_id", "contact id", "联系人id", "联系人编号"],
+      contact_name: ["contact_name", "contact", "联系人", "联系人姓名", "姓名"],
+      position: ["position", "职位", "职务"],
+      phone: ["phone", "电话", "手机号", "手机"],
+      email: ["email", "邮箱"],
+      wechat: ["wechat", "微信"],
+      decision_role: ["decision_role", "决策角色", "角色"],
+      is_primary_contact: ["is_primary_contact", "主联系人", "是否主联系人"],
+      product_id: ["product_id", "product id", "产品id", "产品编号", "产品编码"],
+      product_name: ["product_name", "product", "product name", "产品名称", "产品名", "试吃产品", "产品"],
+      product_alias: ["product_alias", "alias", "产品别名", "别名"],
+      sku: ["sku", "SKU", "货号"],
+      product_line: ["product_line", "产品线", "系列"],
+      cacao_percentage: ["cacao_percentage", "可可含量", "可可百分比"],
+      product_status: ["product_status", "产品状态", "状态"],
+      description: ["description", "描述", "产品描述"],
+      sample_id: ["sample_id", "sample id", "样品id", "样品编号"],
+      sample_batch: ["sample_batch", "样品批次", "批次"],
+      sample_quantity: ["sample_quantity", "样品数量", "数量"],
+      sent_date: ["sent_date", "寄出日期", "寄样日期"],
+      received_date: ["received_date", "收到日期", "客户收到日期"],
+      sample_status: ["sample_status", "样品状态", "状态"],
+      feedback_due_date: ["feedback_due_date", "预计反馈日期", "反馈截止日期"],
+      logistics_info: ["logistics_info", "物流信息", "物流"],
+      opportunity_id: ["opportunity_id", "opportunity id", "商机id", "商机编号"],
+      product_interest: ["product_interest", "感兴趣产品", "产品兴趣", "意向产品"],
+      stage: ["stage", "商机阶段", "阶段"],
+      expected_value: ["expected_value", "预计金额", "预计价值"],
+      probability: ["probability", "成交概率", "概率"],
+      next_action: ["next_action", "下一步", "下一步动作"],
+      next_follow_up_date: ["next_follow_up_date", "下次跟进日期", "跟进日期"],
+      lost_reason: ["lost_reason", "流失原因"],
+      quote_id: ["quote_id", "quote id", "报价id", "报价编号"],
+      quantity: ["quantity", "数量"],
+      unit_price: ["unit_price", "单价"],
+      currency: ["currency", "币种"],
+      valid_until: ["valid_until", "有效期", "报价有效期"],
+      quote_status: ["quote_status", "报价状态", "状态"],
+      order_id: ["order_id", "order id", "订单id", "订单编号"],
+      total_value: ["total_value", "订单金额", "总金额", "金额"],
+      gross_margin: ["gross_margin", "毛利率"],
+      payment_status: ["payment_status", "付款状态"],
+      delivery_status: ["delivery_status", "交付状态", "配送状态"],
+      repeat_order_flag: ["repeat_order_flag", "是否复购", "复购"],
+      order_date: ["order_date", "订单日期"],
+      interaction_id: ["interaction_id", "interaction id", "跟进id", "跟进记录id"],
+      interaction_type: ["interaction_type", "跟进类型", "沟通方式"],
+      interaction_date: ["interaction_date", "跟进日期", "沟通日期"],
+      content: ["content", "内容", "跟进内容"],
+      feedback_id: ["feedback_id", "feedback id", "反馈id", "反馈编号"],
+      tasting_date: ["tasting_date", "试吃日期", "品尝日期"],
+      overall_liking: ["overall_liking", "总体喜欢程度", "总体评价", "喜欢程度", "整体评分", "评分"],
+      purchase_intent: ["purchase_intent", "购买意愿", "下单意愿", "采购意愿"],
+      liked_tags: ["liked_tags", "喜欢标签", "喜欢的风味", "喜欢风味", "喜欢点"],
+      disliked_tags: ["disliked_tags", "不喜欢标签", "不喜欢的风味", "不喜欢风味", "吐槽/不喜欢", "吐槽", "不喜欢点"],
+      sweetness_feedback: ["sweetness_feedback", "甜度反馈", "甜度评价", "甜度"],
+      texture_feedback: ["texture_feedback", "口感反馈", "口感评价"],
+      aroma_feedback: ["aroma_feedback", "香气反馈", "香气评价"],
+      price_acceptance: ["price_acceptance", "价格接受度", "价格接受", "价格反馈"],
+      comment: ["comment", "原始评论", "评论", "反馈内容"],
+      created_at: ["created_at", "创建时间", "创建日期"],
+      updated_at: ["updated_at", "更新时间", "更新日期"],
+      source_system: ["source_system", "来源系统"],
+      sync_status: ["sync_status", "同步状态"],
+      external_id: ["external_id", "外部id"]
+    };
+
+    const tagAliases = {
+      脆: "脆感", 酥脆: "脆感", 脆口: "脆感", crunchy: "脆感",
+      丝滑: "顺滑", 滑: "顺滑", smooth: "顺滑",
+      奶油: "奶油感", 奶油质地: "奶油感", creamy: "奶油感",
+      颗粒: "颗粒感", 粉感: "颗粒感", grainy: "颗粒感",
+      厚: "厚重感", 厚重: "厚重感", 浓厚: "厚重感", rich: "厚重感",
+      化口: "融化速度", 融化: "融化速度", melt: "融化速度",
+      可可: "可可香", 黑巧香: "可可香", cocoa: "可可香",
+      坚果: "坚果香", 开心果: "坚果香", 榛子: "坚果香", nutty: "坚果香",
+      奶味: "奶香", 乳香: "奶香", milky: "奶香",
+      果味: "果香", 水果: "果香", 柑橘: "果香", 柚子: "果香", 树莓: "果香", fruity: "果香",
+      焦糖: "焦糖香", 太妃糖: "焦糖香", caramel: "焦糖香",
+      烘烤: "焙烤香", 烤香: "焙烤香", roasted: "焙烤香",
+      甜: "甜度", 甜味: "甜度", 低甜: "甜度", 高甜: "甜度", sweetness: "甜度",
+      苦: "苦度", 苦味: "苦度", bitterness: "苦度",
+      酸: "酸度", 酸味: "酸度", acidity: "酸度",
+      咸: "咸度", 海盐: "咸度", salt: "咸度",
+      涩: "涩感", 收敛: "涩感", astringency: "涩感",
+      回味: "余味", 余韵: "余味", aftertaste: "余味"
+    };
+
+    const ratingMap = {
+      "非常喜欢": 5, "很喜欢": 4, "喜欢": 4, "一般": 3, "普通": 3, "还行": 3,
+      "不太喜欢": 2, "不喜欢": 1, "非常不喜欢": 1,
+      "强烈购买": 5, "愿意购买": 4, "考虑购买": 3, "考虑": 3, "暂不购买": 2, "无意愿": 1,
+      "非常愿意": 5
+    };
+
+    const ratingReviewMap = {
+      "很好吃": 4,
+      "会买": 4
+    };
+
+    const sweetnessMap = {
+      "太甜": "Too High", "过甜": "Too High", "高甜": "Too High",
+      "偏甜": "Slightly High", "略甜": "Slightly High", "稍甜": "Slightly High",
+      "正好": "Just Right", "刚好": "Just Right", "适中": "Just Right", "合适": "Just Right",
+      "不够甜": "Slightly Low", "偏低": "Slightly Low", "略低": "Slightly Low", "低甜": "Slightly Low",
+      "太低": "Too Low", "完全不甜": "Too Low"
+    };
+
+    const priceAcceptanceMap = {
+      "高端价可接受": "Premium Acceptable",
+      "premium acceptable": "Premium Acceptable",
+      "可接受": "Acceptable",
+      "acceptable": "Acceptable",
+      "偏贵": "Too Expensive",
+      "有点贵": "Too Expensive",
+      "too expensive": "Too Expensive",
+      "price sensitive": "Too Expensive",
+      "good value": "Good Value",
+      "性价比高": "Good Value",
+      "性价比好": "Good Value"
+    };
+
+    function importedWorkbookState() {
+      const imported = window.MOKE_CRM_IMPORTED_DATA;
+      if (!imported || !imported.data || !imported.dataset_id) return null;
+      if (localStorage.getItem(IMPORTED_DATASET_MARKER_KEY) === imported.dataset_id) return null;
+      const importedData = structuredClone(imported.data);
+      ensureStateShape(importedData);
+      importedData.dataMode = DATA_MODES.full;
+      importedData.customerTasteProfiles = buildTasteProfiles(importedData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
+      localStorage.setItem(IMPORTED_DATASET_MARKER_KEY, imported.dataset_id);
+      return importedData;
+    }
+
+    function ensureStateShape(data) {
+      Object.keys(seed).forEach(key => {
+        if (!Array.isArray(data[key])) data[key] = [];
+      });
+      if (!Array.isArray(data.importLogs)) data.importLogs = [];
+      data.dataMode = data.dataMode || inferDataMode(data);
+      return data;
+    }
+
+    function inferDataMode(data) {
+      const imported = window.MOKE_CRM_IMPORTED_DATA?.data;
+      if (imported && data.customers?.length === imported.customers?.length && data.products?.length === imported.products?.length) return DATA_MODES.full;
+      if (data.customers?.length === seed.customers.length && data.products?.length === seed.products.length) return DATA_MODES.small;
+      return DATA_MODES.custom;
+    }
+
+    function currentDataMode(data = state) {
+      return data?.dataMode || inferDataMode(data || {});
+    }
+
+    function loadState() {
+      const imported = importedWorkbookState();
+      if (imported) return imported;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        const seeded = structuredClone(seed);
+        ensureStateShape(seeded);
+        seeded.dataMode = DATA_MODES.small;
+        seeded.customerTasteProfiles = buildTasteProfiles(seeded);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+        return seeded;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        ensureStateShape(parsed);
+        parsed.customerTasteProfiles = buildTasteProfiles(parsed);
+        return parsed;
+      } catch {
+        const seeded = structuredClone(seed);
+        ensureStateShape(seeded);
+        seeded.dataMode = DATA_MODES.small;
+        seeded.customerTasteProfiles = buildTasteProfiles(seeded);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+        return seeded;
+      }
+    }
+
+    function saveState(next = state, options = {}) {
+      ensureStateShape(next);
+      if (options.dataMode) next.dataMode = options.dataMode;
+      next.customerTasteProfiles = buildTasteProfiles(next);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      state = next;
+      updateProductTypes();
+    }
+
+    function persistStateWithoutTasteProfileRebuild(next = state, options = {}) {
+      ensureStateShape(next);
+      if (options.dataMode) next.dataMode = options.dataMode;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      state = next;
+      updateProductTypes();
+    }
+
+    function updateProductTypes() {
+      state.products.forEach(product => {
+        product.generated_type = generateProductType(product.product_id);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function buildTasteProfiles(data) {
+      const profiles = data.customers.map(customer => {
+        const feedbacks = data.customerFeedback.filter(f => f.customer_id === customer.customer_id);
+        const likedFeedbacks = feedbacks.filter(f => Number(f.purchase_intent) >= 4 && Number(f.overall_liking) >= 4);
+        const dislikedFeedbacks = feedbacks.filter(f => Number(f.overall_liking) <= 2);
+        const preferredTags = new Set();
+        const dislikedTags = new Set();
+        likedFeedbacks.forEach(f => {
+          primaryScores(data, f.product_id).forEach(s => preferredTags.add(s.tag_id));
+          asArray(f.liked_tags).forEach(t => preferredTags.add(t));
+        });
+        dislikedFeedbacks.forEach(f => {
+          primaryScores(data, f.product_id).forEach(s => dislikedTags.add(s.tag_id));
+          asArray(f.disliked_tags).forEach(t => dislikedTags.add(t));
+        });
+        feedbacks.forEach(f => asArray(f.disliked_tags).forEach(t => dislikedTags.add(t)));
+
+        const grouped = groupTagsByDimension(data, Array.from(preferredTags));
+        const recommended = scoreProductsAgainstTags(data, Array.from(preferredTags), Array.from(dislikedTags), true);
+        const notRecommended = scoreProductsAgainstTags(data, Array.from(preferredTags), Array.from(dislikedTags), false);
+        const confidence = Math.min(95, Math.round((feedbacks.length / 5) * 70 + likedFeedbacks.length * 5));
+        return baseRecord({
+          profile_id: `CTP-${customer.customer_id.slice(-4)}`,
+          customer_id: customer.customer_id,
+          preferred_texture_tags: grouped.Texture,
+          preferred_aroma_tags: grouped.Aroma,
+          preferred_taste_tags: grouped.Taste,
+          disliked_tags: Array.from(dislikedTags),
+          recommended_products: recommended.slice(0, 3),
+          not_recommended_products: notRecommended.slice(0, 2),
+          confidence_score: Math.max(10, Math.min(confidence, 95)),
+          last_updated: iso(today)
+        });
+      });
+      return profiles;
+    }
+
+    function primaryScores(data, productId) {
+      return data.productFlavorScores.filter(s => s.product_id === productId && Number(s.score) >= 4);
+    }
+
+    function groupTagsByDimension(data, tagIds) {
+      const result = { Texture: [], Aroma: [], Taste: [] };
+      tagIds.forEach(id => {
+        const tag = data.flavorTags.find(t => t.tag_id === id);
+        if (tag && result[tag.dimension]) result[tag.dimension].push(id);
+      });
+      return result;
+    }
+
+    function scoreProductsAgainstTags(data, preferredIds, dislikedIds, positive) {
+      return data.products
+        .map(product => {
+          const scores = data.productFlavorScores.filter(s => s.product_id === product.product_id);
+          const match = scores.reduce((sum, score) => {
+            const id = score.tag_id;
+            if (preferredIds.includes(id)) sum += Number(score.score);
+            if (dislikedIds.includes(id)) sum -= Number(score.score) * 1.3;
+            return sum;
+          }, 0);
+          return { id: product.product_id, match };
+        })
+        .filter(item => positive ? item.match > 0 : item.match < 0)
+        .sort((a, b) => positive ? b.match - a.match : a.match - b.match)
+        .map(item => item.id);
+    }
+
+    function asArray(value) {
+      if (Array.isArray(value)) return value;
+      if (value === undefined || value === null || value === "") return [];
+      return String(value).split(/[;,，、]/).map(v => v.trim()).filter(Boolean);
+    }
+
+    function init() {
+      document.getElementById("modalClose").innerHTML = icon("close");
+      document.getElementById("modalClose").addEventListener("click", closeModal);
+      document.getElementById("modalBackdrop").addEventListener("click", event => {
+        if (event.target.id === "modalBackdrop") closeModal();
+      });
+      window.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeModal();
+      });
+      renderNav();
+      route("dashboard");
+    }
+
+    function renderNav() {
+      const nav = document.getElementById("nav");
+      nav.innerHTML = navItems.map(item => {
+        const count = item.table && state[item.table] ? state[item.table].length : "";
+        return `<button data-view="${item.id}" class="${item.id === currentView ? "active" : ""}">
+          ${icon(item.icon)}
+          <span>${item.label}</span>
+          <span class="count">${count}</span>
+        </button>`;
+      }).join("");
+      nav.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => route(button.dataset.view));
+      });
+    }
+
+    function route(view) {
+      currentView = view;
+      currentTab = "overview";
+      selectedId = null;
+      searchTerm = "";
+      filters = {};
+      const item = navItems.find(n => n.id === view);
+      document.getElementById("pageTitle").textContent = item.label;
+      document.getElementById("pageKicker").textContent = item.kicker;
+      renderNav();
+      renderTopActions();
+      render();
+    }
+
+    function renderTopActions() {
+      const wrap = document.getElementById("topActions");
+      if (currentView === "dashboard") {
+        wrap.innerHTML = `
+          <button class="btn" id="refreshProfiles">${icon("refresh")}刷新画像</button>
+          <button class="btn" id="resetSmallDemo">${icon("refresh")}Reset to Small Demo Data</button>
+          <button class="btn" id="resetFullDemo">${icon("refresh")}Reset to Full Realistic Import Demo Data</button>
+          <button class="btn" id="clearTransactions">${icon("refresh")}Clear Transaction Data Only</button>
+        `;
+        document.getElementById("refreshProfiles").addEventListener("click", () => {
+          saveState(state);
+          toast("客户口味画像已重新汇总");
+          render();
+        });
+        document.getElementById("resetSmallDemo").addEventListener("click", resetSmallDemoData);
+        document.getElementById("resetFullDemo").addEventListener("click", resetFullDemoData);
+        document.getElementById("clearTransactions").addEventListener("click", clearTransactionDataOnly);
+        return;
+      }
+      if (currentView === "import_export") {
+        wrap.innerHTML = `
+          <button class="btn" id="exportAll">${icon("download")}导出全部 CSV</button>
+          <button class="btn" id="resetDemo">${icon("refresh")}重置模拟数据</button>
+        `;
+        document.getElementById("exportAll").addEventListener("click", exportAllCsv);
+        document.getElementById("resetDemo").addEventListener("click", resetSmallDemoData);
+        return;
+      }
+      const table = navItems.find(n => n.id === currentView).table;
+      const meta = tableMeta[table];
+      wrap.innerHTML = `
+        <button class="btn" id="exportCurrent">${icon("download")}导出 CSV</button>
+        <button class="btn primary" id="newRecord">${icon("plus")}新增${meta.singular}</button>
+      `;
+      document.getElementById("exportCurrent").addEventListener("click", () => exportCsv(table));
+      document.getElementById("newRecord").addEventListener("click", () => openRecordModal(table));
+    }
+
+    function render() {
+      if (currentView === "dashboard") return renderDashboard();
+      if (currentView === "import_export") return renderImportExport();
+      const item = navItems.find(n => n.id === currentView);
+      renderTableView(item.table);
+    }
+
+    function renderDashboard() {
+      const app = document.getElementById("app");
+      const metrics = getMetrics();
+      app.innerHTML = `
+        <section class="grid kpis">
+          ${kpi("客户总数", metrics.totalCustomers, "本月新增 " + metrics.newCustomersThisMonth)}
+          ${kpi("活跃客户", metrics.activeCustomers, "Active / Converted")}
+          ${kpi("当前商机", metrics.openOpportunities, formatMoney(metrics.pipelineValue))}
+          ${kpi("待反馈样品", metrics.samplesDue, "寄出后超过 7 天或已收到")}
+          ${kpi("已报价", metrics.quotesSent, "Sent / Accepted")}
+          ${kpi("订单金额", formatMoney(metrics.orderValue), metrics.orders + " 个订单")}
+        </section>
+        <section class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>销售漏斗</strong><span>Lead 到 Repeat Order 的阶段分布</span></div>
+            </div>
+            <div class="panel-body">${renderFunnel()}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>样品待跟进</strong><span>已寄出或已收到但未反馈</span></div>
+            </div>
+            <div class="panel-body">${renderSampleAlerts()}</div>
+          </div>
+        </section>
+        <section class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>产品反馈 Top 5</strong><span>按总体喜欢程度和购买意愿综合排序</span></div>
+            </div>
+            <div class="panel-body">${renderProductFeedbackTop()}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>风味趋势 Top 5</strong><span>客户喜欢标签出现频次</span></div>
+            </div>
+            <div class="panel-body">${renderFlavorTrend()}</div>
+          </div>
+        </section>
+        <section class="grid three">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title"><strong>客户类型</strong><span>客户结构</span></div></div>
+            <div class="panel-body">${renderDistribution("customers", "customer_type")}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title"><strong>国家分布</strong><span>客户来源市场</span></div></div>
+            <div class="panel-body">${renderDistribution("customers", "country")}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title"><strong>甜度反馈</strong><span>客户对甜度的判断</span></div></div>
+            <div class="panel-body">${renderDistribution("customerFeedback", "sweetness_feedback")}</div>
+          </div>
+        </section>
+      `;
+    }
+
+    function kpi(label, value, note) {
+      return `<div class="card kpi">
+        <div class="kpi-label"><span>${label}</span>${icon("layout")}</div>
+        <div class="kpi-value">${value}</div>
+        <div class="kpi-note">${note}</div>
+      </div>`;
+    }
+
+    function getMetrics() {
+      const activeCustomers = state.customers.filter(c => ["Active", "Converted"].includes(c.status)).length;
+      const samplesDue = state.samples.filter(isSampleDue).length;
+      const openOpportunities = state.opportunities.filter(o => o.stage !== "Lost").length;
+      const pipelineValue = state.opportunities.filter(o => o.stage !== "Lost").reduce((sum, o) => sum + Number(o.expected_value || 0), 0);
+      const quotesSent = state.quotes.filter(q => ["Sent", "Accepted"].includes(q.quote_status)).length;
+      const orderValue = state.orders.reduce((sum, o) => sum + Number(o.total_value || 0), 0);
+      return {
+        totalCustomers: state.customers.length,
+        activeCustomers,
+        newCustomersThisMonth: state.customers.filter(c => String(c.created_at || "").slice(0, 7) === "2026-06").length,
+        samplesDue,
+        openOpportunities,
+        pipelineValue,
+        quotesSent,
+        orders: state.orders.length,
+        orderValue
+      };
+    }
+
+    function isSampleDue(sample) {
+      if (sample.sample_status === "Feedback Received") return false;
+      if (["Received", "Tasted"].includes(sample.sample_status)) return true;
+      if (sample.sample_status === "Sent" && sample.sent_date) {
+        return daysBetween(sample.sent_date, iso(today)) > 7;
+      }
+      return false;
+    }
+
+    function daysBetween(a, b) {
+      return Math.floor((new Date(b) - new Date(a)) / 86400000);
+    }
+
+    function renderFunnel() {
+      const stages = enums.opportunityStage.filter(s => s !== "Lost");
+      const counts = stages.map(stage => state.opportunities.filter(o => o.stage === stage).length);
+      const max = Math.max(1, ...counts);
+      return `<div class="funnel">${stages.map((stage, i) => {
+        const count = counts[i];
+        const prev = i === 0 ? count : counts[i - 1] || 1;
+        const conversion = i === 0 ? "100%" : `${Math.round((count / prev) * 100)}%`;
+        return `<div class="funnel-stage">
+          <div class="stage-name">${stage}</div>
+          <div class="stage-block" style="--w:${Math.max(6, Math.round((count / max) * 100))}%"></div>
+          <div class="stage-count">${count} / ${conversion}</div>
+        </div>`;
+      }).join("")}</div>`;
+    }
+
+    function renderSampleAlerts() {
+      const due = state.samples.filter(isSampleDue).slice(0, 8);
+      if (!due.length) return `<div class="empty">暂无待跟进样品</div>`;
+      return `<div class="bar-list">${due.map(sample => `
+        <div class="profile-card">
+          <div class="detail-title">
+            <strong>${displayValue("samples", "customer_id", sample.customer_id)}</strong>
+            <span class="pill orange">${sample.sample_status}</span>
+          </div>
+          <div class="tag-list">
+            <span class="pill blue">${displayValue("samples", "product_id", sample.product_id)}</span>
+            <span class="pill">${sample.sample_batch}</span>
+            <span class="pill">反馈 ${sample.feedback_due_date || "-"}</span>
+          </div>
+        </div>`).join("")}</div>`;
+    }
+
+    function renderProductFeedbackTop() {
+      const rows = productFeedbackStats().slice(0, 5);
+      if (!rows.length) return `<div class="empty">暂无反馈</div>`;
+      const max = Math.max(...rows.map(r => r.score), 1);
+      return renderBars(rows.map(row => ({
+        label: row.product.product_name,
+        value: row.score.toFixed(1),
+        width: row.score / max * 100,
+        color: row.score >= 4 ? "var(--accent)" : "var(--accent-2)"
+      })));
+    }
+
+    function productFeedbackStats() {
+      return state.products.map(product => {
+        const feedbacks = state.customerFeedback.filter(f => f.product_id === product.product_id);
+        const score = feedbacks.length
+          ? feedbacks.reduce((sum, f) => sum + (Number(f.overall_liking || 0) + Number(f.purchase_intent || 0)) / 2, 0) / feedbacks.length
+          : 0;
+        return { product, score, count: feedbacks.length };
+      }).sort((a, b) => b.score - a.score);
+    }
+
+    function renderFlavorTrend() {
+      const counts = countTags(state.customerFeedback.flatMap(f => asArray(f.liked_tags)));
+      const rows = Object.entries(counts)
+        .map(([tagId, count]) => ({ label: tagName(tagId), value: count, width: count }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+      if (!rows.length) return `<div class="empty">暂无趋势</div>`;
+      const max = Math.max(...rows.map(r => r.value), 1);
+      return renderBars(rows.map(r => ({ ...r, width: r.value / max * 100, value: `${r.value} 次`, color: "var(--accent-3)" })));
+    }
+
+    function renderDistribution(table, key) {
+      const counts = countBy(state[table], key);
+      const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([label, count]) => ({ label, value: count }));
+      if (!rows.length) return `<div class="empty">暂无数据</div>`;
+      const max = Math.max(...rows.map(r => r.value), 1);
+      return renderBars(rows.map(r => ({ label: r.label, value: `${r.value}`, width: r.value / max * 100, color: "var(--accent)" })));
+    }
+
+    function renderBars(rows) {
+      return `<div class="bar-list">${rows.map(row => `<div class="bar-row">
+        <div class="bar-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, row.width)}%;background:${row.color || "var(--accent)"}"></div></div>
+        <div class="bar-value">${row.value}</div>
+      </div>`).join("")}</div>`;
+    }
+
+    function renderTableView(table) {
+      const meta = tableMeta[table];
+      const rows = filteredRows(table);
+      const app = document.getElementById("app");
+      app.innerHTML = `
+        <section class="toolbar">
+          <div class="searchbar">${icon("search")}<input id="searchInput" placeholder="搜索 ${meta.title}" value="${escapeAttr(searchTerm)}" /></div>
+          <div class="filters">${renderFilters(table)}</div>
+        </section>
+        <section class="grid two">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>${meta.title}</strong><span>${rows.length} 条记录</span></div>
+            </div>
+            <div class="table-wrap">${renderTable(table, rows)}</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title"><strong>${meta.singular}详情</strong><span>${selectedId ? "关联数据与业务状态" : "选择一条记录查看"}</span></div>
+            </div>
+            <div class="panel-body">${renderDetail(table)}</div>
+          </div>
+        </section>
+      `;
+      document.getElementById("searchInput").addEventListener("input", event => {
+        searchTerm = event.target.value;
+        render();
+      });
+      document.querySelectorAll("[data-filter]").forEach(input => {
+        input.addEventListener("change", event => {
+          filters[event.target.dataset.filter] = event.target.value;
+          render();
+        });
+      });
+      document.querySelectorAll("[data-edit]").forEach(button => {
+        button.addEventListener("click", () => openRecordModal(table, button.dataset.edit));
+      });
+      document.querySelectorAll("[data-delete]").forEach(button => {
+        button.addEventListener("click", () => deleteRecord(table, button.dataset.delete));
+      });
+      document.querySelectorAll("[data-select]").forEach(row => {
+        row.addEventListener("click", event => {
+          if (event.target.closest("button")) return;
+          selectedId = row.dataset.select;
+          render();
+        });
+      });
+      if (!selectedId && rows[0]) {
+        selectedId = rows[0][meta.id];
+        render();
+      }
+    }
+
+    function renderFilters(table) {
+      const filterKeys = filterFieldsFor(table);
+      return filterKeys.map(key => {
+        const options = uniqueValues(state[table], key);
+        return `<select class="select" data-filter="${key}" aria-label="${key}">
+          <option value="">全部 ${labelFor(table, key)}</option>
+          ${options.map(value => `<option value="${escapeAttr(value)}" ${filters[key] === value ? "selected" : ""}>${escapeHtml(displayValue(table, key, value))}</option>`).join("")}
+        </select>`;
+      }).join("");
+    }
+
+    function filterFieldsFor(table) {
+      if (table === "customers") return ["customer_type", "country", "customer_level", "owner", "status"];
+      if (table === "products") return ["product_line", "product_status"];
+      if (table === "flavorTags") return ["dimension"];
+      if (table === "samples") return ["sample_status", "customer_id", "product_id"];
+      if (table === "opportunities") return ["stage", "owner", "customer_id"];
+      if (table === "quotes") return ["quote_status", "currency"];
+      if (table === "orders") return ["payment_status", "delivery_status", "repeat_order_flag"];
+      if (table === "customerFeedback") return ["product_id", "sweetness_feedback", "price_acceptance"];
+      if (table === "customerTasteProfiles") return ["customer_id"];
+      return [];
+    }
+
+    function filteredRows(table) {
+      const meta = tableMeta[table];
+      return state[table].filter(row => {
+        const haystack = meta.search.map(key => displayValue(table, key, row[key])).join(" ").toLowerCase();
+        const matchesSearch = !searchTerm || haystack.includes(searchTerm.toLowerCase());
+        const matchesFilters = Object.entries(filters).every(([key, value]) => !value || String(row[key]) === value);
+        return matchesSearch && matchesFilters;
+      });
+    }
+
+    function renderTable(table, rows) {
+      const meta = tableMeta[table];
+      if (!rows.length) return `<div class="empty">暂无记录</div>`;
+      return `<table>
+        <thead><tr>
+          ${meta.columns.map(([, label]) => `<th>${label}</th>`).join("")}
+          <th style="text-align:right">操作</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(row => `<tr data-select="${row[meta.id]}" style="${selectedId === row[meta.id] ? "outline:2px solid #9acdc3;outline-offset:-2px" : ""}">
+            ${meta.columns.map(([key]) => `<td>${formatCell(table, key, row[key], row)}</td>`).join("")}
+            <td>
+              <div class="row-actions">
+                <button class="btn icon-only" data-edit="${row[meta.id]}" title="编辑" aria-label="编辑">${icon("edit")}</button>
+                <button class="btn icon-only" data-delete="${row[meta.id]}" title="删除" aria-label="删除">${icon("trash")}</button>
+              </div>
+            </td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+    }
+
+    function renderDetail(table) {
+      const meta = tableMeta[table];
+      const row = selectedId ? state[table].find(item => item[meta.id] === selectedId) : null;
+      if (!row) return `<div class="empty">暂无选中记录</div>`;
+      if (table === "customers") return renderCustomerDetail(row);
+      if (table === "products") return renderProductDetail(row);
+      if (table === "customerTasteProfiles") return renderTasteProfileDetail(row);
+      return renderGenericDetail(table, row);
+    }
+
+    function renderGenericDetail(table, row) {
+      const meta = tableMeta[table];
+      return `<div class="detail">
+        <div class="detail-title">
+          <h2>${escapeHtml(primaryName(table, row))}</h2>
+          <span class="pill blue">${row[meta.id]}</span>
+        </div>
+        <div class="detail-meta">
+          ${meta.columns.map(([key, label]) => `<div class="meta-item">
+            <div class="meta-label">${label}</div>
+            <div class="meta-value">${formatCell(table, key, row[key], row)}</div>
+          </div>`).join("")}
+          <div class="meta-item"><div class="meta-label">创建时间</div><div class="meta-value">${row.created_at || "-"}</div></div>
+          <div class="meta-item"><div class="meta-label">更新时间</div><div class="meta-value">${row.updated_at || "-"}</div></div>
+        </div>
+      </div>`;
+    }
+
+    function renderCustomerDetail(customer) {
+      const related = {
+        contacts: state.contacts.filter(r => r.customer_id === customer.customer_id),
+        opportunities: state.opportunities.filter(r => r.customer_id === customer.customer_id),
+        samples: state.samples.filter(r => r.customer_id === customer.customer_id),
+        quotes: state.quotes.filter(r => r.customer_id === customer.customer_id),
+        orders: state.orders.filter(r => r.customer_id === customer.customer_id),
+        interactions: state.interactions.filter(r => r.customer_id === customer.customer_id),
+        feedback: state.customerFeedback.filter(r => r.customer_id === customer.customer_id),
+        profile: state.customerTasteProfiles.find(r => r.customer_id === customer.customer_id)
+      };
+      return `<div class="detail">
+        <div class="detail-title">
+          <div><h2>${escapeHtml(customer.customer_name)}</h2><div class="tag-list">${pill(customer.customer_type, "blue")}${pill(customer.status, statusClass(customer.status))}${pill("Level " + customer.customer_level, "purple")}</div></div>
+          <span class="pill">${customer.customer_id}</span>
+        </div>
+        <div class="detail-meta">
+          ${metaItem("国家/城市", `${customer.country} / ${customer.city}`)}
+          ${metaItem("来源", customer.source_channel)}
+          ${metaItem("负责人", customer.owner)}
+          ${metaItem("Tier0", customer.sync_status)}
+        </div>
+        <div class="tabs">
+          ${["overview", "contacts", "opportunities", "samples", "quotes", "orders", "interactions", "feedback", "profile"].map(tab => `<button class="tab ${currentTab === tab ? "active" : ""}" data-tab="${tab}">${tabLabel(tab)}</button>`).join("")}
+        </div>
+        <div>${renderCustomerTab(customer, related)}</div>
+      </div>`;
+    }
+
+    function renderCustomerTab(customer, related) {
+      setTimeout(() => {
+        document.querySelectorAll("[data-tab]").forEach(button => button.addEventListener("click", () => {
+          currentTab = button.dataset.tab;
+          render();
+        }));
+      });
+      if (currentTab === "overview") {
+        return `<div class="profile-card">
+          <strong>客户备注</strong>
+          <div>${escapeHtml(customer.notes || "-")}</div>
+          <div class="grid three">
+            ${miniStat("联系人", related.contacts.length)}
+            ${miniStat("样品", related.samples.length)}
+            ${miniStat("反馈", related.feedback.length)}
+          </div>
+        </div>`;
+      }
+      if (currentTab === "profile") return related.profile ? renderTasteProfileDetail(related.profile, false) : `<div class="empty">暂无画像</div>`;
+      const tableMap = {
+        contacts: "contacts",
+        opportunities: "opportunities",
+        samples: "samples",
+        quotes: "quotes",
+        orders: "orders",
+        interactions: "interactions",
+        feedback: "customerFeedback"
+      };
+      return miniTable(tableMap[currentTab], related[currentTab] || []);
+    }
+
+    function renderProductDetail(product) {
+      const scores = state.productFlavorScores.filter(s => s.product_id === product.product_id).sort((a, b) => b.score - a.score);
+      const feedbacks = state.customerFeedback.filter(f => f.product_id === product.product_id);
+      const stat = productFeedbackStats().find(s => s.product.product_id === product.product_id);
+      return `<div class="detail">
+        <div class="detail-title">
+          <div><h2>${escapeHtml(product.product_name)}</h2><div class="tag-list">${pill(product.product_status, statusClass(product.product_status))}${pill(product.product_line, "blue")}${pill(product.cacao_percentage || "-", "purple")}</div></div>
+          <span class="pill">${product.product_id}</span>
+        </div>
+        <div class="profile-card">
+          <strong>${escapeHtml(product.generated_type || generateProductType(product.product_id))}</strong>
+          <span>${escapeHtml(product.description || "")}</span>
+        </div>
+        <div class="detail-meta">
+          ${metaItem("平均反馈", stat && stat.count ? `${stat.score.toFixed(1)} / 5` : "-")}
+          ${metaItem("反馈数量", feedbacks.length)}
+          ${metaItem("SKU", product.sku)}
+          ${metaItem("Tier0", product.sync_status)}
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title"><strong>风味画像</strong><span>0-5 感知强度</span></div></div>
+          <div class="panel-body">${renderFlavorScores(scores)}</div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title"><strong>客户反馈</strong><span>${feedbacks.length} 条</span></div></div>
+          <div class="table-wrap">${miniTable("customerFeedback", feedbacks)}</div>
+        </div>
+      </div>`;
+    }
+
+    function renderFlavorScores(scores) {
+      if (!scores.length) return `<div class="empty">暂无风味评分</div>`;
+      return `<div class="flavor-radar">${scores.map(score => {
+        const tag = state.flavorTags.find(t => t.tag_id === score.tag_id);
+        const badge = score.is_primary_tag ? pill("主标签", "green") : score.is_secondary_tag ? pill("副标签", "orange") : "";
+        return `<div class="bar-row">
+          <div class="bar-label">${tag ? tag.tag_name_cn : score.tag_id} ${badge}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Number(score.score) / 5 * 100}%;background:${tagColor(tag && tag.dimension)}"></div></div>
+          <div class="bar-value">${Number(score.score).toFixed(1)}</div>
+        </div>`;
+      }).join("")}</div>`;
+    }
+
+    function renderTasteProfileDetail(profile, showTitle = true) {
+      const customer = state.customers.find(c => c.customer_id === profile.customer_id);
+      const score = Number(profile.confidence_score || 0);
+      const allPreferred = [...asArray(profile.preferred_texture_tags), ...asArray(profile.preferred_aroma_tags), ...asArray(profile.preferred_taste_tags)];
+      return `<div class="detail">
+        ${showTitle ? `<div class="detail-title"><h2>${customer ? escapeHtml(customer.customer_name) : profile.customer_id}</h2><span class="pill">${profile.profile_id}</span></div>` : ""}
+        <div class="profile-card">
+          <div class="profile-score">
+            <div class="ring" style="--p:${score}%">${score}%</div>
+            <div>
+              <strong>画像可信度</strong>
+              <div class="tag-list" style="margin-top:8px">${allPreferred.map(id => pill(tagName(id), "blue")).join("") || pill("暂无偏好", "")}</div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-meta">
+          ${metaItem("偏好口感", tagsDisplay(profile.preferred_texture_tags))}
+          ${metaItem("偏好香气", tagsDisplay(profile.preferred_aroma_tags))}
+          ${metaItem("偏好味觉", tagsDisplay(profile.preferred_taste_tags))}
+          ${metaItem("不喜欢", tagsDisplay(profile.disliked_tags))}
+          ${metaItem("推荐产品", productsDisplay(profile.recommended_products))}
+          ${metaItem("不优先推荐", productsDisplay(profile.not_recommended_products))}
+        </div>
+      </div>`;
+    }
+
+    function miniStat(label, value) {
+      return `<div class="meta-item"><div class="meta-label">${label}</div><div class="meta-value">${value}</div></div>`;
+    }
+
+    function miniTable(table, rows) {
+      if (!rows.length) return `<div class="empty">暂无记录</div>`;
+      const meta = tableMeta[table];
+      const columns = meta.columns.slice(0, 5);
+      return `<table style="min-width:720px">
+        <thead><tr>${columns.map(([, label]) => `<th>${label}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(row => `<tr>${columns.map(([key]) => `<td>${formatCell(table, key, row[key], row)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>`;
+    }
+
+    function renderImportExport() {
+      const exportTables = [
+        ["customers", "customers.csv"],
+        ["contacts", "contacts.csv"],
+        ["products", "products.csv"],
+        ["flavorTags", "flavor_tags.csv"],
+        ["productFlavorScores", "product_flavor_scores.csv"],
+        ["samples", "samples.csv"],
+        ["opportunities", "opportunities.csv"],
+        ["quotes", "quotes.csv"],
+        ["orders", "orders.csv"],
+        ["customerFeedback", "customer_feedback.csv"],
+        ["customerTasteProfiles", "customer_taste_profiles.csv"]
+      ];
+      const lastUndo = readLastImportUndo();
+      const app = document.getElementById("app");
+      app.innerHTML = `
+        <section class="grid two">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title"><strong>Excel / CSV Import Wizard</strong><span>上传后先预览，不会直接写入数据</span></div></div>
+            <div class="panel-body">
+              <div class="grid">
+                <div class="import-box">
+                  <strong>上传 .xlsx 或 .csv</strong>
+                  <div class="code">支持自动识别 Customers / Contacts / Products / Samples / Opportunities / Quotes / Orders / Interactions / Customer_Feedback</div>
+                  <input class="input" id="wizardFile" type="file" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                  <label class="code" for="unknownCustomerMode">unknown customer handling</label>
+                  <select class="select" id="unknownCustomerMode">
+                    <option value="need_review" selected>need_review：未知客户进入人工确认</option>
+                    <option value="error">error：未知客户不可导入</option>
+                    <option value="create_as_potential">create_as_potential：确认后创建为 Potential Customer</option>
+                  </select>
+                  <div class="split-control">
+                    <button class="btn primary" id="wizardAnalyze">${icon("upload")}生成预览</button>
+                    <button class="btn" id="wizardConfirmAll">确认全部复核行</button>
+                    <button class="btn" id="wizardImport">导入可用行</button>
+                  </div>
+                </div>
+                <div id="importPreviewSummary">${renderImportPreviewSummary()}</div>
+                <div id="importPreviewTable">${renderImportPreviewTable()}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title"><strong>导出与导入日志</strong><span>稳定 ID 与 Tier0 预留字段</span></div></div>
+            <div class="panel-body">
+              <div class="import-box">
+                <strong>最近一次导入</strong>
+                <div class="code">${lastUndo ? `${lastUndo.file_name} · ${lastUndo.row_count} rows · ${lastUndo.batch_id}` : "暂无可撤回导入"}</div>
+                <button class="btn danger" id="undoImport" ${lastUndo ? "" : "disabled"}>${icon("refresh")}撤回最近一次导入</button>
+              </div>
+              <div class="import-box">
+                <strong>CSV 导出</strong>
+                <div class="code">可导出核心表，字段保留 source_system / sync_status / external_id</div>
+                <button class="btn" id="exportAllFromWizard">${icon("download")}导出全部 CSV</button>
+              </div>
+              <div class="grid">
+                ${exportTables.map(([table, filename]) => `<div class="profile-card">
+                  <div class="detail-title">
+                    <div><strong>${filename}</strong><div class="code">${state[table].length} rows</div></div>
+                    <button class="btn" data-export="${table}">${icon("download")}CSV</button>
+                  </div>
+                </div>`).join("")}
+              </div>
+              <div class="import-box">
+                <strong>import_logs</strong>
+                ${renderImportLogs()}
+              </div>
+              <div class="import-box">
+                <strong>Tier0 命名空间</strong>
+                <div class="code">MOKE / Customers / Products / FlavorProfiles / Feedback / Samples / Opportunities / Quotes / Orders / Analytics</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+      document.querySelectorAll("[data-export]").forEach(button => button.addEventListener("click", () => exportCsv(button.dataset.export)));
+      document.getElementById("exportAllFromWizard").addEventListener("click", exportAllCsv);
+      document.getElementById("wizardAnalyze").addEventListener("click", handleWizardAnalyze);
+      document.getElementById("wizardConfirmAll").addEventListener("click", confirmAllReviewRows);
+      document.getElementById("wizardImport").addEventListener("click", commitWizardImport);
+      document.getElementById("undoImport").addEventListener("click", undoLastImport);
+      bindImportPreviewControls();
+    }
+
+    function openRecordModal(table, id = null) {
+      const meta = tableMeta[table];
+      const existing = id ? state[table].find(row => row[meta.id] === id) : null;
+      const record = existing ? structuredClone(existing) : defaultRecord(table);
+      const title = `${existing ? "编辑" : "新增"}${meta.singular}`;
+      document.getElementById("modalTitle").textContent = title;
+      document.getElementById("modalBody").innerHTML = `<form id="recordForm" class="form-grid">${meta.fields.map(f => renderField(table, f, record)).join("")}</form>`;
+      document.getElementById("modalFoot").innerHTML = `
+        <button class="btn" id="cancelModal">取消</button>
+        <button class="btn primary" id="saveRecord">${icon("plus")}保存</button>
+      `;
+      document.getElementById("cancelModal").addEventListener("click", closeModal);
+      document.getElementById("saveRecord").addEventListener("click", () => saveRecord(table, record, existing));
+      if (table === "productFlavorScores") {
+        const scoreInput = document.querySelector("[name='score']");
+        const primaryInput = document.querySelector("[name='is_primary_tag']");
+        const secondaryInput = document.querySelector("[name='is_secondary_tag']");
+        scoreInput.addEventListener("input", () => {
+          const score = Number(scoreInput.value || 0);
+          primaryInput.checked = score >= 4;
+          secondaryInput.checked = score >= 3 && score < 4;
+        });
+      }
+      openModal();
+    }
+
+    function renderField(table, f, record) {
+      const value = record[f.key];
+      const required = f.required ? "required" : "";
+      const full = ["textarea", "tagMulti", "relationMulti"].includes(f.type) || f.system ? " full" : "";
+      if (f.type === "textarea") {
+        return `<div class="field${full}"><label>${f.label}</label><textarea class="textarea" name="${f.key}" ${required}>${escapeHtml(value || "")}</textarea></div>`;
+      }
+      if (f.type === "select") {
+        const options = enums[f.enumKey] || [];
+        return `<div class="field${full}"><label>${f.label}</label><select class="select" name="${f.key}" ${required}>
+          ${options.map(opt => `<option value="${escapeAttr(opt)}" ${String(value) === opt ? "selected" : ""}>${escapeHtml(opt)}</option>`).join("")}
+        </select></div>`;
+      }
+      if (f.type === "relation") {
+        return `<div class="field${full}"><label>${f.label}</label><select class="select" name="${f.key}" ${required}>
+          <option value="">-</option>
+          ${state[f.table].map(row => `<option value="${escapeAttr(row[tableMeta[f.table].id])}" ${String(value) === row[tableMeta[f.table].id] ? "selected" : ""}>${escapeHtml(row[f.labelKey] || row[tableMeta[f.table].id])}</option>`).join("")}
+        </select></div>`;
+      }
+      if (f.type === "tagMulti") {
+        return `<div class="field${full}"><label>${f.label}</label><select class="select" name="${f.key}" multiple size="5">
+          ${state.flavorTags.map(tag => `<option value="${tag.tag_id}" ${asArray(value).includes(tag.tag_id) ? "selected" : ""}>${tag.tag_name_cn} · ${tag.dimension}</option>`).join("")}
+        </select></div>`;
+      }
+      if (f.type === "relationMulti") {
+        return `<div class="field${full}"><label>${f.label}</label><select class="select" name="${f.key}" multiple size="5">
+          ${state[f.table].map(row => `<option value="${row[tableMeta[f.table].id]}" ${asArray(value).includes(row[tableMeta[f.table].id]) ? "selected" : ""}>${escapeHtml(row[f.labelKey] || row[tableMeta[f.table].id])}</option>`).join("")}
+        </select></div>`;
+      }
+      if (f.type === "checkbox") {
+        return `<div class="field${full}"><label>${f.label}</label><label class="btn" style="justify-content:flex-start"><input type="checkbox" name="${f.key}" ${value ? "checked" : ""} /> 是</label></div>`;
+      }
+      return `<div class="field${full}"><label>${f.label}</label><input class="input" name="${f.key}" type="${f.type}" value="${escapeAttr(value || "")}" ${required} /></div>`;
+    }
+
+    function saveRecord(table, originalRecord, existing) {
+      const meta = tableMeta[table];
+      const form = document.getElementById("recordForm");
+      if (!form.reportValidity()) return;
+      const record = structuredClone(originalRecord);
+      meta.fields.forEach(f => {
+        const input = form.elements[f.key];
+        if (!input) return;
+        if (f.type === "checkbox") record[f.key] = input.checked;
+        else if (f.type === "number") record[f.key] = input.value === "" ? "" : Number(input.value);
+        else if (f.type === "tagMulti" || f.type === "relationMulti") record[f.key] = Array.from(input.selectedOptions).map(opt => opt.value);
+        else record[f.key] = input.value;
+      });
+      record.updated_at = iso(today);
+      if (existing) {
+        state[table] = state[table].map(row => row[meta.id] === existing[meta.id] ? record : row);
+      } else {
+        record[meta.id] = nextId(table);
+        record.created_at = iso(today);
+        state[table].push(record);
+      }
+      if (table === "customerFeedback") {
+        markSampleFeedbackReceived(record.sample_id);
+      }
+      saveState(state);
+      toast(`${meta.singular}已保存`);
+      closeModal();
+      renderNav();
+      renderTopActions();
+      selectedId = record[meta.id];
+      render();
+    }
+
+    function defaultRecord(table) {
+      const meta = tableMeta[table];
+      const record = baseRecord({ [meta.id]: nextId(table) });
+      meta.fields.forEach(f => {
+        if (record[f.key] !== undefined) return;
+        if (f.type === "checkbox") record[f.key] = false;
+        else if (f.type === "tagMulti" || f.type === "relationMulti") record[f.key] = [];
+        else if (f.type === "select") record[f.key] = (enums[f.enumKey] || [""])[0];
+        else if (f.type === "date") record[f.key] = iso(today);
+        else if (f.key === "source_system") record[f.key] = "MOKE_CRM";
+        else if (f.key === "sync_status") record[f.key] = "not_synced";
+        else record[f.key] = "";
+      });
+      if (table === "productFlavorScores") {
+        record.score = 3;
+        record.is_secondary_tag = true;
+      }
+      if (table === "customerFeedback") {
+        record.overall_liking = 4;
+        record.purchase_intent = 4;
+      }
+      return record;
+    }
+
+    function deleteRecord(table, id) {
+      const meta = tableMeta[table];
+      const row = state[table].find(item => item[meta.id] === id);
+      if (!row) return;
+      const ok = confirm(`删除 ${meta.singular}：${primaryName(table, row)}？`);
+      if (!ok) return;
+      state[table] = state[table].filter(item => item[meta.id] !== id);
+      if (selectedId === id) selectedId = null;
+      saveState(state);
+      toast(`${meta.singular}已删除`);
+      renderNav();
+      render();
+    }
+
+    function nextId(table) {
+      const meta = tableMeta[table];
+      const prefixes = {
+        customers: "CUS",
+        contacts: "CON",
+        products: "PRO",
+        flavorTags: "TAG",
+        productFlavorScores: "PFS",
+        samples: "SAM",
+        opportunities: "OPP",
+        quotes: "QUO",
+        orders: "ORD",
+        interactions: "INT",
+        customerFeedback: "FDB",
+        customerTasteProfiles: "CTP"
+      };
+      const prefix = prefixes[table] || "REC";
+      const nums = state[table].map(row => Number(String(row[meta.id] || "").split("-").pop())).filter(Number.isFinite);
+      return makeId(prefix, (nums.length ? Math.max(...nums) : 0) + 1);
+    }
+
+    function markSampleFeedbackReceived(sampleId) {
+      if (!sampleId) return;
+      const sample = state.samples.find(s => s.sample_id === sampleId);
+      if (sample) {
+        sample.sample_status = "Feedback Received";
+        sample.updated_at = iso(today);
+      }
+    }
+
+    function generateProductType(productId) {
+      const scores = state.productFlavorScores
+        .filter(s => s.product_id === productId && Number(s.score) >= 2)
+        .map(s => ({ ...s, tag: state.flavorTags.find(t => t.tag_id === s.tag_id) }))
+        .filter(s => s.tag)
+        .sort((a, b) => Number(b.score) - Number(a.score));
+      const texture = scores.filter(s => s.tag.dimension === "Texture");
+      const aroma = scores.filter(s => s.tag.dimension === "Aroma");
+      const taste = scores.filter(s => s.tag.dimension === "Taste");
+      const textureName = texture[0] ? texture[0].tag.tag_name_cn : "均衡口感";
+      const aromaNames = aroma.slice(0, 2).map(s => s.tag.tag_name_cn.replace("香", "")).join("");
+      const tasteText = tasteDescriptor(taste);
+      return `${aromaNames || "可可"}${textureName} - ${aromaNames ? aromaNames + "香" : "可可香"} - ${tasteText}`;
+    }
+
+    function tasteDescriptor(tasteScores) {
+      const get = cn => {
+        const row = tasteScores.find(s => s.tag.tag_name_cn === cn);
+        return row ? Number(row.score) : 0;
+      };
+      const sweet = get("甜度");
+      const salty = get("咸度");
+      const bitter = get("苦度");
+      const acid = get("酸度");
+      if (bitter >= 4) return "高苦长余味型";
+      if (acid >= 3.5 && sweet >= 2.8) return "酸甜型";
+      if (salty >= 1.5 && sweet >= 2.5) return "微咸微甜型";
+      if (sweet >= 3.3) return "中甜型";
+      if (sweet < 2.5) return "低甜型";
+      return "均衡味觉型";
+    }
+
+    function productTypeOverride(productId) {
+      const product = state.products.find(p => p.product_id === productId);
+      return product && product.generated_type ? product.generated_type : generateProductType(productId);
+    }
+
+    function formatCell(table, key, value) {
+      if (Array.isArray(value)) {
+        if (key.includes("tags")) return `<div class="tag-list">${value.slice(0, 3).map(id => pill(tagName(id), "blue")).join("")}${value.length > 3 ? pill("+" + (value.length - 3), "") : ""}</div>`;
+        if (key.includes("products")) return `<div class="tag-list">${value.slice(0, 2).map(id => pill(productName(id), "purple")).join("")}${value.length > 2 ? pill("+" + (value.length - 2), "") : ""}</div>`;
+      }
+      if (typeof value === "boolean") return value ? pill("是", "green") : pill("否", "");
+      if (key.endsWith("_status") || key === "status" || key === "stage" || key === "quote_status" || key === "payment_status" || key === "delivery_status" || key === "product_status" || key === "sample_status") {
+        return pill(value || "-", statusClass(value));
+      }
+      if (key === "customer_id") return escapeHtml(customerName(value));
+      if (key === "product_id") return escapeHtml(productName(value));
+      if (key === "contact_id") return escapeHtml(contactName(value));
+      if (key === "sample_id") return escapeHtml(value || "-");
+      if (key === "opportunity_id") return escapeHtml(value || "-");
+      if (key === "quote_id") return escapeHtml(value || "-");
+      if (key === "tag_id") return escapeHtml(tagName(value));
+      if (key === "expected_value" || key === "total_value" || key === "unit_price") return formatMoney(value);
+      if (key === "gross_margin" || key === "probability") return value === "" || value === undefined ? "-" : `${value}%`;
+      if (key === "score") return Number(value || 0).toFixed(1);
+      if (String(value || "").length > 42) return `<span title="${escapeAttr(value)}">${escapeHtml(String(value).slice(0, 42))}...</span>`;
+      return escapeHtml(value === undefined || value === "" ? "-" : String(value));
+    }
+
+    function displayValue(table, key, value) {
+      if (key === "customer_id") return customerName(value);
+      if (key === "product_id") return productName(value);
+      if (key === "contact_id") return contactName(value);
+      if (key === "tag_id") return tagName(value);
+      if (Array.isArray(value)) return value.map(v => tagName(v) || productName(v) || v).join(", ");
+      return value === undefined || value === null || value === "" ? "-" : String(value);
+    }
+
+    function labelFor(table, key) {
+      const meta = tableMeta[table];
+      const col = meta.columns.find(([k]) => k === key);
+      return col ? col[1] : key;
+    }
+
+    function primaryName(table, row) {
+      if (!row) return "-";
+      return row.customer_name || row.contact_name || row.product_name || row.tag_name_cn || row.feedback_id || row.sample_id || row.opportunity_id || row.quote_id || row.order_id || row.interaction_id || row.profile_id || row[tableMeta[table].id];
+    }
+
+    function customerName(id) {
+      return (state.customers.find(c => c.customer_id === id) || {}).customer_name || id || "-";
+    }
+
+    function productName(id) {
+      return (state.products.find(p => p.product_id === id) || {}).product_name || id || "-";
+    }
+
+    function contactName(id) {
+      return (state.contacts.find(c => c.contact_id === id) || {}).contact_name || id || "-";
+    }
+
+    function tagName(id) {
+      return (state.flavorTags.find(t => t.tag_id === id) || {}).tag_name_cn || id || "-";
+    }
+
+    function tagsDisplay(ids) {
+      return asArray(ids).map(id => tagName(id)).join("、") || "-";
+    }
+
+    function productsDisplay(ids) {
+      return asArray(ids).map(id => productName(id)).join("、") || "-";
+    }
+
+    function statusClass(value) {
+      const v = String(value || "");
+      if (["Active", "Converted", "Accepted", "Paid", "Delivered", "Completed", "Launched", "Repeat Order", "Regular Order", "Feedback Received"].includes(v)) return "green";
+      if (["Potential", "Interested", "Testing", "Quoted", "Sent", "Sample Sent", "Trial Order", "Partial", "Received", "Tasted"].includes(v)) return "orange";
+      if (["Lost", "Rejected", "Expired", "No Response", "Discontinued", "Too Expensive"].includes(v)) return "red";
+      if (["Concept", "Sample", "Lead", "Contacted", "Draft", "Not Shipped", "Unpaid"].includes(v)) return "blue";
+      return "";
+    }
+
+    function tagColor(dimension) {
+      if (dimension === "Texture") return "var(--accent)";
+      if (dimension === "Aroma") return "var(--accent-2)";
+      if (dimension === "Taste") return "var(--accent-3)";
+      return "var(--accent)";
+    }
+
+    function countBy(rows, key) {
+      return rows.reduce((acc, row) => {
+        const value = row[key] === undefined || row[key] === "" ? "-" : row[key];
+        acc[value] = (acc[value] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function countTags(tagIds) {
+      return tagIds.reduce((acc, id) => {
+        if (!id) return acc;
+        acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function uniqueValues(rows, key) {
+      return Array.from(new Set(rows.map(row => String(row[key])).filter(v => v && v !== "undefined"))).sort();
+    }
+
+    function metaItem(label, value) {
+      return `<div class="meta-item"><div class="meta-label">${label}</div><div class="meta-value" title="${escapeAttr(value)}">${value}</div></div>`;
+    }
+
+    function pill(text, cls = "") {
+      return `<span class="pill ${cls}">${escapeHtml(text === undefined || text === "" ? "-" : String(text))}</span>`;
+    }
+
+    function tabLabel(tab) {
+      const map = {
+        overview: "基本信息",
+        contacts: "联系人",
+        opportunities: "商机",
+        samples: "样品",
+        quotes: "报价",
+        orders: "订单",
+        interactions: "跟进",
+        feedback: "反馈",
+        profile: "口味画像"
+      };
+      return map[tab] || tab;
+    }
+
+    function formatMoney(value) {
+      const n = Number(value || 0);
+      if (!n) return "-";
+      return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 0 }).format(n);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#096;");
+    }
+
+    function openModal() {
+      const backdrop = document.getElementById("modalBackdrop");
+      backdrop.classList.add("open");
+      backdrop.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById("modalBackdrop");
+      backdrop.classList.remove("open");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
+
+    function toast(message) {
+      const node = document.getElementById("toast");
+      node.innerHTML = `${icon("star")}<span>${escapeHtml(message)}</span>`;
+      node.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => node.classList.remove("show"), 2600);
+    }
+
+    function finishDataReset(message) {
+      selectedId = null;
+      importWizardPreview = null;
+      renderNav();
+      renderTopActions();
+      render();
+      toast(message);
+    }
+
+    function resetSmallDemoData() {
+      if (!confirm("重置会替换当前主数据，可能影响后续 CSV 导入匹配。")) return;
+      const next = structuredClone(seed);
+      ensureStateShape(next);
+      saveState(next, { dataMode: DATA_MODES.small });
+      if (window.MOKE_CRM_IMPORTED_DATA?.dataset_id) localStorage.setItem(IMPORTED_DATASET_MARKER_KEY, window.MOKE_CRM_IMPORTED_DATA.dataset_id);
+      localStorage.removeItem(IMPORT_UNDO_KEY);
+      finishDataReset("已切换到 Small Demo Data");
+    }
+
+    function resetFullDemoData() {
+      if (!confirm("重置会替换当前主数据，可能影响后续 CSV 导入匹配。")) return;
+      const imported = window.MOKE_CRM_IMPORTED_DATA;
+      if (!imported || !imported.data) {
+        toast("未找到 Full Realistic Import Demo Data");
+        return;
+      }
+      const next = structuredClone(imported.data);
+      ensureStateShape(next);
+      saveState(next, { dataMode: DATA_MODES.full });
+      if (imported.dataset_id) localStorage.setItem(IMPORTED_DATASET_MARKER_KEY, imported.dataset_id);
+      localStorage.removeItem(IMPORT_UNDO_KEY);
+      finishDataReset("已切换到 Full Realistic Import Demo Data");
+    }
+
+    function clearTransactionDataOnly() {
+      const next = structuredClone(state);
+      ["samples", "opportunities", "quotes", "orders", "interactions", "customerFeedback", "customerTasteProfiles"].forEach(table => {
+        next[table] = [];
+      });
+      persistStateWithoutTasteProfileRebuild(next, { dataMode: DATA_MODES.custom });
+      localStorage.removeItem(IMPORT_UNDO_KEY);
+      finishDataReset("已清空交易与反馈数据，主数据已保留");
+    }
+
+    function resetDemo() {
+      resetSmallDemoData();
+    }
+
+    function exportCsv(table) {
+      const rows = table === "customerTasteProfiles" ? buildTasteProfiles(state) : state[table];
+      const filenameMap = {
+        customers: "customers.csv",
+        contacts: "contacts.csv",
+        products: "products.csv",
+        flavorTags: "flavor_tags.csv",
+        productFlavorScores: "product_flavor_scores.csv",
+        samples: "samples.csv",
+        opportunities: "opportunities.csv",
+        quotes: "quotes.csv",
+        orders: "orders.csv",
+        interactions: "interactions.csv",
+        customerFeedback: "customer_feedback.csv",
+        customerTasteProfiles: "customer_taste_profiles.csv"
+      };
+      download(filenameMap[table] || `${table}.csv`, toCsv(rows));
+      toast("CSV 已生成");
+    }
+
+    function exportAllCsv() {
+      ["customers", "contacts", "products", "flavorTags", "productFlavorScores", "samples", "opportunities", "quotes", "orders", "customerFeedback", "customerTasteProfiles"].forEach((table, index) => {
+        setTimeout(() => exportCsv(table), index * 120);
+      });
+    }
+
+    function toCsv(rows) {
+      if (!rows.length) return "";
+      const columns = Array.from(rows.reduce((set, row) => {
+        Object.keys(row).forEach(key => set.add(key));
+        return set;
+      }, new Set()));
+      const csvRows = [columns.join(",")];
+      rows.forEach(row => {
+        csvRows.push(columns.map(col => csvValue(row[col])).join(","));
+      });
+      return csvRows.join("\n");
+    }
+
+    function csvValue(value) {
+      const raw = Array.isArray(value) ? value.join(";") : value ?? "";
+      const str = String(raw);
+      if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+      return str;
+    }
+
+    function download(filename, content) {
+      const blob = new Blob(["\ufeff" + content], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderImportPreviewSummary() {
+      if (!importWizardPreview) {
+        return `<div class="import-box">
+          <strong>预览状态</strong>
+          <div class="code">请选择文件并点击“生成预览”。系统会先生成 ready / need_review / error，不会直接写入。</div>
+        </div>`;
+      }
+      const stats = importWizardPreview.stats;
+      if (importWizardPreview.parse_error) {
+        return `<div class="import-box">
+          <strong>parse_error</strong>
+          <div class="code">${escapeHtml(importWizardPreview.parse_error)}</div>
+          ${renderImportDebugPanel(importWizardPreview)}
+        </div>`;
+      }
+      return `<div class="import-box">
+        <strong>${escapeHtml(importWizardPreview.fileName)}</strong>
+        <div class="tag-list">
+          ${pill(`ready ${stats.ready}`, "green")}
+          ${pill(`need_review ${stats.need_review}`, "orange")}
+          ${pill(`error ${stats.error}`, "red")}
+          ${pill(`ignored ${stats.ignored}`, "")}
+          ${importWizardPreview.file_type_conflict ? pill("file_type_conflict", "red") : ""}
+        </div>
+        ${importWizardPreview.file_type_conflict ? `<div class="code">${escapeHtml(importWizardPreview.file_type_conflict)}</div>` : ""}
+        ${renderImportDependencyPanel(importWizardPreview)}
+        ${renderImportDebugPanel(importWizardPreview)}
+        <div class="code">${escapeHtml(importWizardPreview.sheets.map(s => `${s.sheetName} -> ${s.tableLabel}`).join(" · "))}</div>
+      </div>`;
+    }
+
+    function renderImportDependencyPanel(preview) {
+      const check = preview.dependency_check || {};
+      return `<div class="import-box" style="margin-top:10px">
+        <strong>Current master data</strong>
+        <div class="tag-list">
+          ${pill(`Customers: ${Number(check.current_customer_count ?? state.customers.length)}`, "")}
+          ${pill(`Products: ${Number(check.current_product_count ?? state.products.length)}`, "")}
+          ${pill(`Flavor Tags: ${Number(check.current_flavor_tag_count ?? state.flavorTags.length)}`, "")}
+          ${pill(`Current data mode: ${escapeHtml(check.current_data_mode || currentDataMode(state))}`, "")}
+          ${check.customer_match_rate !== undefined ? pill(`customer_match_rate ${check.customer_match_rate}%`, check.customer_match_rate < 50 ? "red" : "green") : ""}
+          ${check.product_match_rate !== undefined ? pill(`product_match_rate ${check.product_match_rate}%`, check.product_match_rate < 50 ? "red" : "green") : ""}
+        </div>
+        ${preview.dependency_warning ? `<div class="code">${escapeHtml(preview.dependency_warning)}</div>` : ""}
+      </div>`;
+    }
+
+    function renderImportDebugPanel(preview) {
+      return `<div class="import-box" style="margin-top:10px">
+        <strong>Debug</strong>
+        <div class="code">Source of preview rows = ${escapeHtml(preview.source_of_preview_rows || "uploaded_file")}</div>
+        <div class="code">uploaded_file_name = ${escapeHtml(preview.uploaded_file_name || preview.fileName || "-")}</div>
+        <div class="code">parsed_header = ${escapeHtml((preview.parsed_header || []).join(", "))}</div>
+        <div class="code">Parsed rows = ${Number(preview.parsed_row_count || 0)}</div>
+        <div class="code">Detected table = ${escapeHtml(preview.detected_table || "-")}</div>
+        ${preview.name_detected_table ? `<div class="code">Filename table = ${escapeHtml(preview.name_detected_table)}</div>` : ""}
+        ${preview.header_detected_table ? `<div class="code">Header table = ${escapeHtml(preview.header_detected_table)}</div>` : ""}
+        <div class="code">unknown_customer_mode = ${escapeHtml(preview.unknown_customer_mode || "need_review")}</div>
+        <div class="code">current_customer_count = ${Number(preview.dependency_check?.current_customer_count ?? state.customers.length)}</div>
+        <div class="code">current_product_count = ${Number(preview.dependency_check?.current_product_count ?? state.products.length)}</div>
+        <div class="code">current_flavor_tag_count = ${Number(preview.dependency_check?.current_flavor_tag_count ?? state.flavorTags.length)}</div>
+        <div class="code">customer_match_rate = ${Number(preview.dependency_check?.customer_match_rate ?? 0)}%</div>
+        <div class="code">product_match_rate = ${Number(preview.dependency_check?.product_match_rate ?? 0)}%</div>
+        <div class="code">first_row_preview = ${escapeHtml(JSON.stringify(preview.first_row_preview || {}))}</div>
+        <div class="code">mapped_first_row_preview = ${escapeHtml(JSON.stringify(preview.mapped_first_row_preview || {}))}</div>
+      </div>`;
+    }
+
+    function renderImportPreviewTable() {
+      if (!importWizardPreview) return "";
+      const rows = importWizardPreview.rows.slice(0, 120);
+      if (!rows.length) return `<div class="empty">没有可预览的数据行</div>`;
+      return `<div class="panel" style="box-shadow:none">
+        <div class="panel-head">
+          <div class="panel-title"><strong>导入前预览</strong><span>最多显示前 120 行；error 不可导入</span></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>确认</th><th>Sheet</th><th>表</th><th>行</th><th>状态</th><th>动作</th><th>识别结果</th><th>确认原因</th><th>Mapped</th><th>errors</th><th>warnings</th>
+            </tr></thead>
+            <tbody>
+              ${rows.map(row => `<tr>
+                <td>${row.import_status === "need_review" ? `<input type="checkbox" data-review-row="${row.preview_id}" ${row.confirmed ? "checked" : ""} />` : row.import_status === "ready" ? "自动" : "-"}</td>
+                <td>${escapeHtml(row.sheetName)}</td>
+                <td>${escapeHtml(row.tableLabel)}</td>
+                <td>${row.rowNumber}</td>
+                <td>${pill(row.import_status, row.import_status === "ready" ? "green" : row.import_status === "need_review" ? "orange" : "red")}</td>
+                <td>${escapeHtml(row.action)}</td>
+                <td><span title="${escapeAttr(JSON.stringify(row.record))}">${escapeHtml(previewRecordLabel(row))}</span></td>
+                <td>${(row.review_reasons || []).map(reason => pill(reason, "orange")).join("") || "-"}</td>
+                <td>${renderMappedResult(row)}</td>
+                <td>${row.errors.map(error => pill(error, "red")).join("") || "-"}</td>
+                <td>${row.warnings.map(warning => pill(warning, "orange")).join("") || "-"}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    function renderImportLogs() {
+      const logs = (state.importLogs || []).slice(-8).reverse();
+      if (!logs.length) return `<div class="code">暂无日志</div>`;
+      return `<div class="bar-list">${logs.map(log => `<div class="profile-card">
+        <div class="detail-title">
+          <div><strong>${escapeHtml(log.action || "import")}</strong><div class="code">${escapeHtml(log.file_name || "-")} · ${escapeHtml(log.batch_id || "-")}</div></div>
+          ${pill(log.status || "-", log.status === "completed" ? "green" : log.status === "undone" ? "orange" : "red")}
+        </div>
+        <div class="code">${escapeHtml(log.row_count || 0)} rows · ${escapeHtml(log.message || "")} · ${escapeHtml(log.created_at || "")}</div>
+      </div>`).join("")}</div>`;
+    }
+
+    function previewRecordLabel(row) {
+      const record = row.record || {};
+      const source = row.source || {};
+      if (!record.customer_name && !source.customer_name) {
+        const product = record.product_name || source.product_name || productName(record.product_id) || "-";
+        return `Missing customer_name / product_name = ${product}`;
+      }
+      return record.customer_name || source.customer_name || record.contact_name || source.contact_name || record.product_name || source.product_name || record.feedback_id || record.sample_id || source.sample_id || record.opportunity_id || record.quote_id || record.order_id || record.interaction_id || record[tableMeta[row.table]?.id] || "-";
+    }
+
+    function renderMappedResult(row) {
+      const record = row.record || {};
+      const mapped = {
+        customer_id: record.customer_id || "",
+        product_id: record.product_id || "",
+        overall_liking: record.overall_liking || "",
+        purchase_intent: record.purchase_intent || "",
+        liked_tags: asArray(record.liked_tags).map(tagName),
+        disliked_tags: asArray(record.disliked_tags).map(tagName),
+        negative_comment: record.negative_comment || "",
+        warnings: row.warnings || []
+      };
+      return `<details><summary>查看</summary><pre class="code">${escapeHtml(JSON.stringify(mapped, null, 2))}</pre></details>`;
+    }
+
+    function updateImportPreviewUI() {
+      const summary = document.getElementById("importPreviewSummary");
+      const table = document.getElementById("importPreviewTable");
+      if (summary) summary.innerHTML = renderImportPreviewSummary();
+      if (table) table.innerHTML = renderImportPreviewTable();
+      bindImportPreviewControls();
+    }
+
+    function bindImportPreviewControls() {
+      document.querySelectorAll("[data-review-row]").forEach(input => {
+        input.addEventListener("change", event => {
+          const row = importWizardPreview?.rows.find(item => item.preview_id === event.target.dataset.reviewRow);
+          if (row) row.confirmed = event.target.checked;
+        });
+      });
+    }
+
+    async function handleWizardAnalyze() {
+      const input = document.getElementById("wizardFile");
+      const file = input.files && input.files[0];
+      if (!file) {
+        toast("请选择 .xlsx 或 .csv 文件");
+        return;
+      }
+      try {
+        importWizardPreview = null;
+        updateImportPreviewUI();
+        toast("正在生成导入预览");
+        const parseResult = await parseImportFile(file);
+        const unknownCustomerMode = document.getElementById("unknownCustomerMode")?.value || "need_review";
+        console.log("MOKE Import Wizard parse", {
+          uploaded_file_name: parseResult.uploaded_file_name,
+          parsed_header: parseResult.parsed_header,
+          parsed_row_count: parseResult.parsed_row_count,
+          first_row_preview: parseResult.first_row_preview,
+          mapped_first_row_preview: parseResult.mapped_first_row_preview,
+          unknown_customer_mode: unknownCustomerMode
+        });
+        importWizardPreview = buildImportPreview(parseResult, { unknownCustomerMode });
+        updateImportPreviewUI();
+        toast(`预览完成：${importWizardPreview.parsed_row_count} 行`);
+      } catch (error) {
+        console.error(error);
+        importWizardPreview = buildParseErrorPreview(file.name, error);
+        updateImportPreviewUI();
+        toast(`解析失败：${error.message || error}`);
+      }
+    }
+
+    function confirmAllReviewRows() {
+      if (!importWizardPreview) {
+        toast("请先生成预览");
+        return;
+      }
+      importWizardPreview.rows.forEach(row => {
+        if (row.import_status === "need_review") row.confirmed = true;
+      });
+      updateImportPreviewUI();
+      toast("need_review 行已全部人工确认");
+    }
+
+    function commitWizardImport() {
+      if (!importWizardPreview) {
+        toast("请先生成预览");
+        return;
+      }
+      const allowedRows = importWizardPreview.rows.filter(row => row.import_status === "ready" || (row.import_status === "need_review" && row.confirmed));
+      if (!allowedRows.length) {
+        toast("没有可导入行：请确认 need_review 或修正 error");
+        return;
+      }
+      const rejectedReview = importWizardPreview.rows.filter(row => row.import_status === "need_review" && !row.confirmed).length;
+      const batchId = `IMP-${Date.now()}`;
+      const snapshot = structuredClone(state);
+      const undoPayload = {
+        batch_id: batchId,
+        file_name: importWizardPreview.fileName,
+        row_count: allowedRows.length,
+        snapshot
+      };
+      localStorage.setItem(IMPORT_UNDO_KEY, JSON.stringify(undoPayload));
+
+      const tableCounts = {};
+      const createdCustomersByName = new Map();
+      let skippedUnknownCustomers = 0;
+      let importedRows = 0;
+      allowedRows.forEach(row => {
+        const meta = tableMeta[row.table];
+        if (!meta) return;
+        const record = structuredClone(row.record);
+        if (row.table === "customerFeedback" && record.pending_customer_name && !record.customer_id) {
+          if (record.unknown_customer_mode === "create_as_potential" || importWizardPreview.options?.unknownCustomerMode === "create_as_potential") {
+            record.customer_id = ensurePotentialCustomerFromImport(record.pending_customer_name, record.owner, createdCustomersByName);
+          } else {
+            skippedUnknownCustomers += 1;
+            return;
+          }
+        }
+        if (row.table === "customerFeedback") {
+          delete record.pending_customer_name;
+          delete record.unknown_customer_mode;
+          delete record.customer_name;
+        }
+        if (!record[meta.id]) record[meta.id] = nextId(row.table);
+        record.source_system = record.source_system || "MOKE_CRM";
+        record.sync_status = record.sync_status || "not_synced";
+        record.external_id = record.external_id || "";
+        record.updated_at = iso(today);
+        if (!record.created_at) record.created_at = iso(today);
+        const index = state[row.table].findIndex(item => item[meta.id] === record[meta.id]);
+        if (index >= 0) {
+          state[row.table][index] = { ...state[row.table][index], ...record };
+          row.action = "update";
+        } else {
+          state[row.table].push(record);
+          row.action = "insert";
+        }
+        if (row.table === "customerFeedback") markSampleFeedbackReceived(record.sample_id);
+        tableCounts[row.table] = (tableCounts[row.table] || 0) + 1;
+        importedRows += 1;
+      });
+
+      undoPayload.row_count = importedRows;
+      localStorage.setItem(IMPORT_UNDO_KEY, JSON.stringify(undoPayload));
+
+      state.importLogs.push(baseRecord({
+        log_id: `LOG-${String((state.importLogs.length || 0) + 1).padStart(4, "0")}`,
+        batch_id: batchId,
+        action: "import",
+        file_name: importWizardPreview.fileName,
+        row_count: importedRows,
+        status: "completed",
+        message: `导入 ${importedRows} 行；跳过 ${rejectedReview} 行未确认 need_review；error ${importWizardPreview.stats.error} 行；${Object.entries(tableCounts).map(([table, count]) => `${table}:${count}`).join(", ")}`
+      }));
+
+      if (skippedUnknownCustomers) {
+        state.importLogs[state.importLogs.length - 1].message += `；未知客户未导入 ${skippedUnknownCustomers} 行`;
+      }
+      saveState(state, { dataMode: DATA_MODES.custom });
+      importWizardPreview = null;
+      renderNav();
+      renderTopActions();
+      render();
+      toast(`导入完成：${importedRows} 行`);
+    }
+
+    function ensurePotentialCustomerFromImport(name, owner, createdCustomersByName) {
+      const normalized = normalizeName(name);
+      const existing = state.customers.find(customer => normalizeName(customer.customer_name) === normalized);
+      if (existing) return existing.customer_id;
+      if (createdCustomersByName.has(normalized)) return createdCustomersByName.get(normalized);
+      const customer = baseRecord({
+        customer_id: nextId("customers"),
+        customer_name: name,
+        customer_type: "Other",
+        country: "",
+        city: "",
+        source_channel: "Import Wizard",
+        customer_level: "C",
+        status: "Potential",
+        owner: owner || "",
+        notes: "Created from Customer Feedback import",
+        source_system: "MOKE_CRM",
+        sync_status: "not_synced",
+        external_id: ""
+      });
+      state.customers.push(customer);
+      createdCustomersByName.set(normalized, customer.customer_id);
+      return customer.customer_id;
+    }
+
+    function readLastImportUndo() {
+      try {
+        return JSON.parse(localStorage.getItem(IMPORT_UNDO_KEY) || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function undoLastImport() {
+      const undo = readLastImportUndo();
+      if (!undo || !undo.snapshot) {
+        toast("暂无可撤回导入");
+        return;
+      }
+      if (!confirm(`撤回最近一次导入：${undo.file_name}，${undo.row_count} 行？`)) return;
+      const restored = ensureStateShape(undo.snapshot);
+      restored.importLogs.push(baseRecord({
+        log_id: `LOG-${String((restored.importLogs.length || 0) + 1).padStart(4, "0")}`,
+        batch_id: undo.batch_id,
+        action: "undo",
+        file_name: undo.file_name,
+        row_count: undo.row_count,
+        status: "undone",
+        message: "已撤回最近一次导入，恢复导入前数据快照"
+      }));
+      localStorage.removeItem(IMPORT_UNDO_KEY);
+      saveState(restored);
+      importWizardPreview = null;
+      renderNav();
+      renderTopActions();
+      render();
+      toast("最近一次导入已撤回");
+    }
+
+    async function parseImportFile(file) {
+      const name = file.name.toLowerCase();
+      if (name.endsWith(".csv")) {
+        const text = await file.text();
+        const parsed = parseCsvWithMeta(text);
+        if (!parsed.rows.length) throw new Error("parse_error: uploaded_file parsedRows is empty");
+        return makeParseResult(file.name, [{ sheetName: file.name.replace(/\.[^.]+$/, ""), rows: parsed.rows, parsed_header: parsed.headers }]);
+      }
+      if (name.endsWith(".xlsx")) {
+        const sheets = await parseXlsxFile(await file.arrayBuffer());
+        const parsedRowCount = sheets.reduce((sum, sheet) => sum + sheet.rows.length, 0);
+        if (!parsedRowCount) throw new Error("parse_error: uploaded_file parsedRows is empty");
+        return makeParseResult(file.name, sheets);
+      }
+      throw new Error("仅支持 .xlsx 和 .csv");
+    }
+
+    function makeParseResult(fileName, sheets) {
+      const uploadedSheets = sheets.map(sheet => ({
+        sheetName: sheet.sheetName,
+        rows: Array.isArray(sheet.rows) ? sheet.rows : [],
+        parsed_header: sheet.parsed_header || Object.keys((sheet.rows || [])[0] || {}),
+        source_of_rows: "uploaded_file"
+      }));
+      const firstSheetWithRows = uploadedSheets.find(sheet => sheet.rows.length) || uploadedSheets[0] || { rows: [], parsed_header: [] };
+      const firstRow = firstSheetWithRows.rows[0] || null;
+      const mappedFirstRow = firstRow ? mapFields(firstRow, fieldAliases) : null;
+      return {
+        uploaded_file_name: fileName,
+        source_of_preview_rows: "uploaded_file",
+        parsed_header: firstSheetWithRows.parsed_header || [],
+        parsed_row_count: uploadedSheets.reduce((sum, sheet) => sum + sheet.rows.length, 0),
+        first_row_preview: firstRow,
+        mapped_first_row_preview: mappedFirstRow,
+        sheets: uploadedSheets
+      };
+    }
+
+    function buildParseErrorPreview(fileName, error) {
+      return {
+        fileName,
+        uploaded_file_name: fileName,
+        source_of_preview_rows: "uploaded_file",
+        parsed_header: [],
+        parsed_row_count: 0,
+        first_row_preview: null,
+        mapped_first_row_preview: null,
+        detected_table: "-",
+        parse_error: error.message || String(error),
+        sheets: [],
+        rows: [],
+        stats: { ready: 0, need_review: 0, error: 0, ignored: 0 }
+      };
+    }
+
+    function buildImportPreview(parseResult, options = {}) {
+      const previewOptions = {
+        unknownCustomerMode: options.unknownCustomerMode || "need_review",
+        allowCreateProducts: Boolean(options.allowCreateProducts)
+      };
+      const recognized = parseResult.sheets.map(sheet => {
+        const parsedRows = Array.isArray(sheet.rows) ? sheet.rows : [];
+        const detection = detectImportSheet(sheet.sheetName, parsedRows);
+        return {
+          ...sheet,
+          detection,
+          table: detection.table,
+          tableLabel: detection.conflict ? "file_type_conflict" : detection.table ? tableNameForPreview(detection.table) : "ignored",
+          file_type_conflict: detection.conflictMessage
+        };
+      });
+      const context = buildImportContext(recognized);
+      const rows = [];
+      recognized.forEach(sheet => {
+        if (sheet.detection?.conflict) {
+          const parsedRows = Array.isArray(sheet.rows) ? sheet.rows : [];
+          parsedRows.filter(row => Object.values(row).some(value => String(value || "").trim())).forEach((raw, index) => {
+            rows.push(buildConflictPreviewRow(sheet, raw, index + 2));
+          });
+          return;
+        }
+        if (!sheet.table || !importTables.includes(sheet.table)) return;
+        const parsedRows = Array.isArray(sheet.rows) ? sheet.rows : [];
+        parsedRows.filter(row => Object.values(row).some(value => String(value || "").trim())).forEach((raw, index) => {
+          rows.push(normalizeImportRow(sheet.table, raw, context, sheet.sheetName, index + 2, previewOptions));
+        });
+      });
+      const stats = rows.reduce((acc, row) => {
+        acc[row.import_status] += 1;
+        return acc;
+      }, { ready: 0, need_review: 0, error: 0, ignored: recognized.filter(s => !s.table || !importTables.includes(s.table)).length });
+      const detectedTables = Array.from(new Set(recognized.filter(s => s.table).map(s => s.tableLabel)));
+      const conflicts = recognized.filter(s => s.detection?.conflict);
+      const dependencyCheck = buildDependencyCheck(recognized, context);
+      return {
+        fileName: parseResult.uploaded_file_name,
+        uploaded_file_name: parseResult.uploaded_file_name,
+        options: previewOptions,
+        unknown_customer_mode: previewOptions.unknownCustomerMode,
+        source_of_preview_rows: "uploaded_file",
+        parsed_header: parseResult.parsed_header,
+        parsed_row_count: parseResult.parsed_row_count,
+        first_row_preview: parseResult.first_row_preview,
+        mapped_first_row_preview: mappedPreviewForDebug(rows[0]) || parseResult.mapped_first_row_preview,
+        detected_table: conflicts.length ? "file_type_conflict" : detectedTables.join(", ") || "-",
+        name_detected_table: Array.from(new Set(recognized.map(s => s.detection?.nameTable).filter(Boolean).map(tableNameForPreview))).join(", "),
+        header_detected_table: Array.from(new Set(recognized.map(s => s.detection?.headerTable).filter(Boolean).map(tableNameForPreview))).join(", "),
+        file_type_conflict: conflicts.map(s => s.file_type_conflict).filter(Boolean).join(" · "),
+        dependency_check: dependencyCheck,
+        dependency_warning: dependencyCheck.warning,
+        sheets: recognized,
+        rows,
+        stats
+      };
+    }
+
+    function buildDependencyCheck(recognized) {
+      const feedbackRows = recognized
+        .filter(sheet => sheet.table === "customerFeedback" && !sheet.detection?.conflict)
+        .flatMap(sheet => (Array.isArray(sheet.rows) ? sheet.rows : []).filter(row => Object.values(row).some(value => String(value || "").trim())));
+      const mappedRows = feedbackRows.map(row => canonicalizeRow(row));
+      const customerMatched = mappedRows.filter(row => ["matched", "review"].includes(matchCustomer(row, state.customers).status)).length;
+      const productMatched = mappedRows.filter(row => ["matched", "review"].includes(matchProduct(row, state.products).status)).length;
+      const total = mappedRows.length;
+      const customerMatchRate = total ? Math.round((customerMatched / total) * 100) : 100;
+      const productMatchRate = total ? Math.round((productMatched / total) * 100) : 100;
+      return {
+        current_customer_count: state.customers.length,
+        current_product_count: state.products.length,
+        current_flavor_tag_count: state.flavorTags.length,
+        current_data_mode: currentDataMode(state),
+        customer_match_rate: customerMatchRate,
+        product_match_rate: productMatchRate,
+        warning: total && customerMatchRate < 50 ? "当前反馈文件中的客户大部分不在 CRM 中。请先导入 Customers，或切换到允许创建新客户模式。" : ""
+      };
+    }
+
+    function mappedPreviewForDebug(row) {
+      if (!row) return null;
+      const record = row.record || row.source || {};
+      const keys = ["customer_name", "customer_id", "product_name", "product_id", "sample_id", "tasting_date", "overall_liking", "purchase_intent", "liked_tags", "disliked_tags", "sweetness_feedback", "price_acceptance", "comment", "owner"];
+      return keys.reduce((acc, key) => {
+        const value = record[key] !== undefined ? record[key] : row.source && row.source[key];
+        if (value !== undefined && value !== "") acc[key] = value;
+        return acc;
+      }, {});
+    }
+
+    function buildConflictPreviewRow(sheet, raw, rowNumber) {
+      return {
+        preview_id: `conflict-${sheet.sheetName}-${rowNumber}-${Math.random().toString(36).slice(2, 7)}`,
+        sheetName: sheet.sheetName,
+        table: sheet.detection?.headerTable || sheet.detection?.nameTable || "",
+        tableLabel: "file_type_conflict",
+        rowNumber,
+        source: canonicalizeRow(raw),
+        record: canonicalizeRow(raw),
+        action: "blocked",
+        import_status: "error",
+        errors: [sheet.file_type_conflict || "file_type_conflict"],
+        warnings: [],
+        confirmed: false
+      };
+    }
+
+    function tableNameForPreview(table) {
+      const map = {
+        customers: "Customers",
+        contacts: "Contacts",
+        products: "Products",
+        samples: "Samples",
+        opportunities: "Opportunities",
+        quotes: "Quotes",
+        orders: "Orders",
+        interactions: "Interactions",
+        customerFeedback: "Customer_Feedback"
+      };
+      return map[table] || table;
+    }
+
+    function detectImportSheet(sheetName, rows) {
+      const nameTable = detectTableFromName(sheetName);
+      const headerDetection = detectTableFromHeaders(rows);
+      const headerTable = headerDetection.table;
+      const headerScore = headerDetection.score;
+      if (nameTable && headerTable && nameTable !== headerTable && headerScore >= 2) {
+        return {
+          table: null,
+          nameTable,
+          headerTable,
+          headerScore,
+          conflict: true,
+          conflictMessage: `file_type_conflict: 文件名像 ${tableNameForPreview(nameTable)}，但表头像 ${tableNameForPreview(headerTable)}。`
+        };
+      }
+      return {
+        table: nameTable || headerTable,
+        nameTable,
+        headerTable,
+        headerScore,
+        conflict: false,
+        conflictMessage: ""
+      };
+    }
+
+    function detectImportTable(sheetName, rows) {
+      return detectImportSheet(sheetName, rows).table;
+    }
+
+    function detectTableFromName(sheetName) {
+      const normalizedName = normalizeImportKey(sheetName.replace(/\.[^.]+$/, ""));
+      for (const [table, aliases] of Object.entries(sheetAliases)) {
+        if (aliases.map(normalizeImportKey).includes(normalizedName)) return table;
+      }
+      return null;
+    }
+
+    function detectTableFromHeaders(rows) {
+      const headers = rows[0] ? Object.keys(rows[0]).map(header => canonicalFieldName(header)) : [];
+      const score = Object.entries(importFieldSets()).map(([table, fields]) => ({
+        table,
+        score: fields.filter(field => headers.includes(field)).length
+      })).sort((a, b) => b.score - a.score)[0];
+      return score && score.score >= 2 ? score : { table: null, score: score ? score.score : 0 };
+    }
+
+    function importFieldSets() {
+      return {
+        customers: ["customer_id", "customer_name", "customer_type", "country", "city"],
+        contacts: ["contact_id", "customer_id", "contact_name", "decision_role"],
+        products: ["product_id", "product_name", "sku", "product_line"],
+        samples: ["sample_id", "customer_id", "product_id", "sample_status"],
+        opportunities: ["opportunity_id", "customer_id", "stage", "expected_value"],
+        quotes: ["quote_id", "customer_id", "product_id", "quote_status"],
+        orders: ["order_id", "customer_id", "product_id", "total_value"],
+        interactions: ["interaction_id", "customer_id", "interaction_type", "content"],
+        customerFeedback: ["feedback_id", "customer_id", "product_id", "overall_liking", "purchase_intent"]
+      };
+    }
+
+    function buildImportContext(sheets) {
+      const rawByTable = table => sheets.filter(s => s.table === table).flatMap(s => s.rows.map(row => canonicalizeRow(row)));
+      const prospectiveCustomers = [
+        ...state.customers,
+        ...rawByTable("customers").map(row => ({ customer_id: cellText(row.customer_id), customer_name: cellText(row.customer_name) })).filter(row => row.customer_id || row.customer_name)
+      ];
+      const prospectiveProducts = [
+        ...state.products,
+        ...rawByTable("products").map(row => ({
+          product_id: cellText(row.product_id),
+          product_name: cellText(row.product_name),
+          sku: cellText(row.sku),
+          product_alias: cellText(row.product_alias)
+        })).filter(row => row.product_id || row.product_name || row.sku)
+      ];
+      const prospectiveTags = [...state.flavorTags];
+      return {
+        customers: prospectiveCustomers,
+        products: prospectiveProducts,
+        tags: prospectiveTags,
+        contacts: [...state.contacts, ...rawByTable("contacts")],
+        samples: [...state.samples, ...rawByTable("samples")],
+        opportunities: [...state.opportunities, ...rawByTable("opportunities")],
+        quotes: [...state.quotes, ...rawByTable("quotes")]
+      };
+    }
+
+    function normalizeImportRow(table, raw, context, sheetName, rowNumber, options = {}) {
+      const source = canonicalizeRow(raw);
+      const errors = [];
+      const warnings = [];
+      const record = normalizeRecordByTable(table, source, context, errors, warnings, options);
+      const meta = tableMeta[table];
+      if (meta && !record[meta.id]) record[meta.id] = nextImportId(table, rowNumber);
+      record.source_system = record.source_system || "MOKE_CRM";
+      record.sync_status = record.sync_status || "not_synced";
+      record.external_id = record.external_id || "";
+      record.created_at = normalizeDateValue(record.created_at) || iso(today);
+      record.updated_at = normalizeDateValue(record.updated_at) || iso(today);
+      const action = meta && state[table].some(item => item[meta.id] === record[meta.id]) ? "update" : "insert";
+      const review_reasons = reviewReasonsFor(warnings);
+      const import_status = importStatusFor(errors, warnings);
+      return {
+        preview_id: `${table}-${sheetName}-${rowNumber}-${Math.random().toString(36).slice(2, 7)}`,
+        sheetName,
+        table,
+        tableLabel: tableNameForPreview(table),
+        rowNumber,
+        source,
+        record,
+        action,
+        import_status,
+        errors,
+        warnings,
+        review_reasons,
+        confirmed: false
+      };
+    }
+
+    function importStatusFor(errors, warnings) {
+      if (errors.length) return "error";
+      return warnings.some(w => ["product_alias_match", "fuzzy_product_match", "non_flavor_negative_comment", "natural_language_rating", "liked_tags_unknown", "unknown_customer_need_review", "unknown_customer_create_as_potential", "模糊", "人工确认", "未能识别", "未知风味", "需要复核"].some(token => w.includes(token))) ? "need_review" : "ready";
+    }
+
+    function reviewReasonsFor(warnings) {
+      const joined = warnings.join(" ");
+      const reasons = [];
+      if (joined.includes("product_alias_match")) reasons.push("product_alias_match");
+      if (joined.includes("fuzzy_product_match")) reasons.push("fuzzy_product_match");
+      if (joined.includes("non_flavor_negative_comment")) reasons.push("non_flavor_negative_comment");
+      if (joined.includes("natural_language_rating")) reasons.push("natural_language_rating");
+      if (joined.includes("liked_tags_unknown")) reasons.push("unknown_liked_tag");
+      if (joined.includes("unknown_customer_need_review")) reasons.push("unknown_customer_need_review");
+      if (joined.includes("unknown_customer_create_as_potential")) reasons.push("unknown_customer_create_as_potential");
+      return reasons;
+    }
+
+    function normalizeRecordByTable(table, row, context, errors, warnings, options = {}) {
+      const record = {};
+      Object.entries(row).forEach(([key, value]) => {
+        if (value !== "") record[key] = value;
+      });
+      if (table === "customers") {
+        required(record, "customer_name", errors, "缺少客户名称");
+        record.customer_type = enumValue(record.customer_type, "customerType", "Other", warnings);
+        record.customer_level = enumValue(record.customer_level, "customerLevel", "C", warnings);
+        record.status = enumValue(record.status, "customerStatus", "Potential", warnings);
+      }
+      if (table === "products") {
+        required(record, "product_name", errors, "缺少产品名称");
+        record.product_status = enumValue(record.product_status, "productStatus", "Testing", warnings);
+        if (record.cacao_percentage && !String(record.cacao_percentage).includes("%")) record.cacao_percentage = `${record.cacao_percentage}%`;
+      }
+      if (table === "contacts") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        required(record, "contact_name", errors, "缺少联系人姓名");
+        record.decision_role = enumValue(record.decision_role, "decisionRole", "Other", warnings);
+        record.is_primary_contact = boolValue(record.is_primary_contact);
+      }
+      if (table === "samples") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        record.product_id = resolveProduct(row, context, errors, warnings);
+        record.contact_id = resolveContact(row.contact_id, context, warnings) || record.contact_id || "";
+        record.sample_quantity = numberValue(record.sample_quantity, "");
+        record.sample_status = enumValue(record.sample_status, "sampleStatus", "Sent", warnings);
+      }
+      if (table === "opportunities") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        const product = resolveProductLoose(row.product_interest || row.product_name || row.product_id || row.sku, context, warnings);
+        record.product_interest = product.value || cellText(row.product_interest || row.product_name);
+        record.stage = enumValue(record.stage, "opportunityStage", "Lead", warnings);
+        record.expected_value = numberValue(record.expected_value, 0);
+        record.probability = numberValue(record.probability, 0);
+      }
+      if (table === "quotes") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        record.product_id = resolveProduct(row, context, errors, warnings);
+        record.opportunity_id = resolveById(row.opportunity_id, context.opportunities, "opportunity_id", warnings, "商机") || row.opportunity_id || "";
+        record.quantity = numberValue(record.quantity, 0);
+        record.unit_price = numberValue(record.unit_price, 0);
+        record.currency = enumValue(record.currency, "currency", "CNY", warnings);
+        record.quote_status = enumValue(record.quote_status, "quoteStatus", "Draft", warnings);
+      }
+      if (table === "orders") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        record.product_id = resolveProduct(row, context, errors, warnings);
+        record.opportunity_id = resolveById(row.opportunity_id, context.opportunities, "opportunity_id", warnings, "商机") || row.opportunity_id || "";
+        record.quote_id = resolveById(row.quote_id, context.quotes, "quote_id", warnings, "报价") || row.quote_id || "";
+        record.quantity = numberValue(record.quantity, 0);
+        record.total_value = numberValue(record.total_value, 0);
+        const margin = numberValue(record.gross_margin, 0);
+        record.gross_margin = margin <= 1 && margin > 0 ? Math.round(margin * 1000) / 10 : margin;
+        record.payment_status = enumValue(record.payment_status, "paymentStatus", "Unpaid", warnings);
+        record.delivery_status = enumValue(record.delivery_status, "deliveryStatus", "Not Shipped", warnings);
+        record.repeat_order_flag = boolValue(record.repeat_order_flag);
+      }
+      if (table === "interactions") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        record.contact_id = resolveContact(row.contact_id, context, warnings) || record.contact_id || "";
+        record.opportunity_id = resolveById(row.opportunity_id, context.opportunities, "opportunity_id", warnings, "商机") || row.opportunity_id || "";
+        record.interaction_type = enumValue(record.interaction_type, "interactionType", "Other", warnings);
+      }
+      if (table === "customerFeedback") {
+        record.customer_id = resolveCustomer(row, context, errors, warnings, options);
+        if (!record.customer_id && row.customer_name) {
+          record.pending_customer_name = row.customer_name;
+          record.customer_name = row.customer_name;
+          record.unknown_customer_mode = options.unknownCustomerMode || "need_review";
+        }
+        record.product_id = resolveProduct(row, context, errors, warnings);
+        record.contact_id = resolveContact(row.contact_id, context, warnings) || record.contact_id || "";
+        record.sample_id = resolveById(row.sample_id, context.samples, "sample_id", warnings, "样品") || row.sample_id || "";
+        record.overall_liking = ratingValue(record.overall_liking, errors, warnings, "总体喜欢程度");
+        record.purchase_intent = ratingValue(record.purchase_intent, errors, warnings, "购买意愿");
+        record.liked_tags = standardizeTags(row.liked_tags, context.tags, warnings);
+        const dislikedResult = standardizeDislikedTags(row.disliked_tags, context.tags, warnings);
+        record.disliked_tags = dislikedResult.tags;
+        if (dislikedResult.negativeText) record.negative_comment = dislikedResult.negativeText;
+        if (dislikedResult.negativeText) record.comment = [record.comment, dislikedResult.negativeText].filter(Boolean).join("；");
+        record.sweetness_feedback = sweetnessValue(row.sweetness_feedback, warnings);
+        record.price_acceptance = priceAcceptanceValue(row.price_acceptance, warnings);
+      }
+      ["sent_date", "received_date", "feedback_due_date", "next_follow_up_date", "valid_until", "order_date", "interaction_date", "tasting_date", "created_at", "updated_at"].forEach(key => {
+        if (record[key]) record[key] = normalizeDateValue(record[key]);
+      });
+      return record;
+    }
+
+    function mapFields(row, aliases = fieldAliases) {
+      return Object.entries(row).reduce((acc, [header, value]) => {
+        const key = canonicalFieldName(header, aliases);
+        acc[key] = normalizeCellValue(value);
+        return acc;
+      }, {});
+    }
+
+    function canonicalizeRow(row) {
+      return mapFields(row, fieldAliases);
+    }
+
+    function canonicalFieldName(header, aliases = fieldAliases) {
+      const normalized = normalizeImportKey(header);
+      for (const [key, keyAliases] of Object.entries(aliases)) {
+        if (keyAliases.map(normalizeImportKey).includes(normalized)) return key;
+      }
+      return normalized.replace(/[^a-z0-9_]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+    }
+
+    function normalizeImportKey(value) {
+      return String(value || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[\-\/（）()：:]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+    }
+
+    function normalizeCellValue(value) {
+      if (value === null || value === undefined) return "";
+      if (value instanceof Date) return iso(value);
+      return String(value).trim();
+    }
+
+    function required(record, key, errors, message) {
+      if (!cellText(record[key])) errors.push(message);
+    }
+
+    function cellText(value) {
+      return value === undefined || value === null ? "" : String(value).trim();
+    }
+
+    function enumValue(value, enumKey, fallback, warnings) {
+      const text = cellText(value);
+      if (!text) return fallback;
+      const options = enums[enumKey] || [];
+      const exact = options.find(option => normalizeImportKey(option) === normalizeImportKey(text));
+      if (exact) return exact;
+      warnings.push(`${text} 未匹配标准枚举，已使用 ${fallback}`);
+      return fallback;
+    }
+
+    function boolValue(value) {
+      return ["true", "1", "yes", "y", "是", "复购", "主联系人"].includes(cellText(value).toLowerCase());
+    }
+
+    function numberValue(value, fallback = 0) {
+      const text = cellText(value).replace(/,/g, "");
+      if (!text) return fallback;
+      const direct = Number(text);
+      if (Number.isFinite(direct)) return direct;
+      const match = text.match(/-?\d+(\.\d+)?/);
+      return match ? Number(match[0]) : fallback;
+    }
+
+    function ratingValue(value, errors, warnings, label) {
+      const text = cellText(value);
+      if (!text) {
+        errors.push(`${label} 缺少评分`);
+        return "";
+      }
+      const numeric = numberValue(text, NaN);
+      if (Number.isFinite(numeric) && numeric >= 1 && numeric <= 5) return Math.round(numeric);
+      const key = Object.keys(ratingMap).find(alias => text.includes(alias));
+      if (key) return ratingMap[key];
+      const reviewKey = Object.keys(ratingReviewMap).find(alias => text.includes(alias));
+      if (reviewKey) {
+        warnings.push(`natural_language_rating: ${label} "${text}" 已映射为 ${ratingReviewMap[reviewKey]}，需要复核`);
+        return ratingReviewMap[reviewKey];
+      }
+      errors.push(`${label} 无法转换为 1-5 分：${text}`);
+      return "";
+    }
+
+    function sweetnessValue(value, warnings) {
+      const text = cellText(value);
+      if (!text) return "";
+      const exact = enums.sweetnessFeedback.find(option => normalizeImportKey(option) === normalizeImportKey(text));
+      if (exact) return exact;
+      const key = Object.keys(sweetnessMap).find(alias => text.includes(alias));
+      if (key) return sweetnessMap[key];
+      warnings.push(`甜度反馈未识别：${text}`);
+      return text;
+    }
+
+    function priceAcceptanceValue(value, warnings) {
+      const text = cellText(value);
+      if (!text) return "Acceptable";
+      const exact = enums.priceAcceptance.find(option => normalizeImportKey(option) === normalizeImportKey(text));
+      if (exact) return exact;
+      const key = Object.keys(priceAcceptanceMap).find(alias => normalizeName(text).includes(normalizeName(alias)));
+      if (key) return priceAcceptanceMap[key];
+      warnings.push(`price_acceptance_nonstandard: ${text} 未匹配标准枚举，已使用 Acceptable`);
+      return "Acceptable";
+    }
+
+    function standardizeTags(value, tags, warnings) {
+      const rawText = cellText(value);
+      if (!rawText) return [];
+      const tagByCn = new Map(tags.map(tag => [normalizeImportKey(tag.tag_name_cn), tag]));
+      const tagByEn = new Map(tags.map(tag => [normalizeImportKey(tag.tag_name_en), tag]));
+      const aliasByKey = new Map(Object.entries(tagAliases).map(([alias, cn]) => [normalizeImportKey(alias), cn]));
+      const pieces = asArray(rawText).flatMap(item => item.split(/[、，,;；|/]/)).map(item => item.trim()).filter(Boolean);
+      const inferred = new Set();
+      const addTag = text => {
+        const key = normalizeImportKey(text);
+        const aliasCn = aliasByKey.get(key);
+        const tag = tagByCn.get(key) || tagByEn.get(key) || (aliasCn ? tagByCn.get(normalizeImportKey(aliasCn)) : null);
+        if (tag) {
+          inferred.add(tag.tag_id);
+          return true;
+        }
+        for (const [aliasKey, cn] of aliasByKey.entries()) {
+          if (normalizeImportKey(text).includes(aliasKey)) {
+            const aliasTag = tagByCn.get(normalizeImportKey(cn));
+            if (aliasTag) inferred.add(aliasTag.tag_id);
+            return Boolean(aliasTag);
+          }
+        }
+        return false;
+      };
+      pieces.forEach(piece => {
+        if (!addTag(piece)) warnings.push(`liked_tags_unknown: 风味标签未识别：${piece}`);
+      });
+      if (!inferred.size) {
+        Object.keys(tagAliases).forEach(alias => {
+          if (rawText.includes(alias)) addTag(alias);
+        });
+      }
+      return Array.from(inferred);
+    }
+
+    function standardizeDislikedTags(value, tags, warnings) {
+      const rawText = cellText(value);
+      if (!rawText) return { tags: [], negativeText: "" };
+      const pieces = asArray(rawText).flatMap(item => item.split(/[、，,;；|/]/)).map(item => item.trim()).filter(Boolean);
+      const matched = [];
+      const unmatched = [];
+      pieces.forEach(piece => {
+        const before = matched.length;
+        const tagIds = standardizeTags(piece, tags, []);
+        tagIds.forEach(id => {
+          if (!matched.includes(id)) matched.push(id);
+        });
+        if (matched.length === before) unmatched.push(piece);
+      });
+      if (unmatched.length) warnings.push(`non_flavor_negative_comment: 未知风味或非风味吐槽已放入 negative_comment：${unmatched.join("、")}`);
+      return { tags: matched, negativeText: unmatched.join("；") };
+    }
+
+    function resolveCustomer(row, context, errors, warnings, options = {}) {
+      const result = matchCustomer(row, context.customers);
+      if (result.status === "matched") {
+        if (result.warning) warnings.push(result.warning);
+        return result.value;
+      }
+      if (result.status === "review") {
+        warnings.push(result.warning);
+        return result.value;
+      }
+      const name = cellText(row.customer_name);
+      if (!name) {
+        errors.push("缺 customer_name");
+        return cellText(row.customer_id);
+      }
+      const mode = options.unknownCustomerMode || "need_review";
+      if (mode === "create_as_potential") {
+        warnings.push(`unknown_customer_create_as_potential: 客户不存在，确认后创建为 Potential Customer：${name}`);
+        return "";
+      }
+      if (mode === "need_review") {
+        warnings.push(`unknown_customer_need_review: 客户不存在：${name}`);
+        return "";
+      }
+      errors.push(`客户不存在：${name}`);
+      return cellText(row.customer_id);
+    }
+
+    function resolveProduct(row, context, errors, warnings) {
+      const result = matchProduct(row, context.products);
+      if (result.status === "matched") {
+        if (result.warning) warnings.push(result.warning);
+        return result.value;
+      }
+      if (result.status === "review") {
+        warnings.push(result.warning);
+        return result.value;
+      }
+      const productName = cellText(row.product_name || row.product_interest);
+      if (productName) errors.push(`产品不存在：${productName}`);
+      else errors.push("缺 product_name / product_id / sku");
+      return cellText(row.product_id);
+    }
+
+    function resolveProductLoose(value, context, warnings) {
+      const text = cellText(value);
+      if (!text) return { status: "empty", value: "" };
+      return matchProduct({ product_id: text, sku: text, product_name: text, product_interest: text }, context.products, warnings);
+    }
+
+    function matchCustomer(row, customers) {
+      const id = cellText(row.customer_id);
+      if (id && customers.some(customer => customer.customer_id === id)) return { status: "matched", value: id };
+      const name = cellText(row.customer_name);
+      if (!name) return { status: "missing", value: id };
+      const exact = customers.find(customer => cellText(customer.customer_name) === name);
+      if (exact) return { status: "matched", value: exact.customer_id };
+      const normalized = customers.find(customer => normalizeName(customer.customer_name) === normalizeName(name));
+      if (normalized) return { status: "matched", value: normalized.customer_id, warning: `客户 normalize 匹配：${name} -> ${normalized.customer_name}` };
+      const fuzzy = bestFuzzy(name, customers, "customer_name");
+      if (fuzzy.score >= 0.72) return { status: "review", value: fuzzy.row.customer_id, warning: `客户模糊匹配：${name} -> ${fuzzy.row.customer_name} (${Math.round(fuzzy.score * 100)}%)，需人工确认` };
+      return { status: "missing", value: id };
+    }
+
+    function matchProduct(row, products) {
+      const productId = cellText(row.product_id);
+      if (productId && products.some(product => product.product_id === productId)) return { status: "matched", value: productId };
+      const sku = cellText(row.sku);
+      if (sku) {
+        const bySku = products.find(product => normalizeName(product.sku) === normalizeName(sku));
+        if (bySku) return { status: "matched", value: bySku.product_id };
+      }
+      const name = cellText(row.product_name || row.product_interest);
+      if (name) {
+        const exact = products.find(product => cellText(product.product_name) === name);
+        if (exact) return { status: "matched", value: exact.product_id };
+        const normalized = products.find(product => normalizeName(product.product_name) === normalizeName(name));
+        if (normalized) return { status: "matched", value: normalized.product_id, warning: `产品 normalize 匹配：${name} -> ${normalized.product_name}` };
+        const alias = products.find(product => productAliases(product).some(item => normalizeName(item) === normalizeName(name)));
+        if (alias) return { status: "matched", value: alias.product_id, warning: `product_alias_match: 产品别名匹配：${name} -> ${alias.product_name}` };
+        const fuzzy = bestFuzzy(name, products, "product_name");
+        if (fuzzy.score >= 0.72) return { status: "review", value: fuzzy.row.product_id, warning: `fuzzy_product_match: 产品模糊匹配：${name} -> ${fuzzy.row.product_name} (${Math.round(fuzzy.score * 100)}%)，需人工确认` };
+      }
+      return { status: "missing", value: productId };
+    }
+
+    function productAliases(product) {
+      const builtIn = {
+        "海盐开心果巧克力": ["海盐开心果黑巧", "开心果黑巧", "海盐开心果", "Sea Salt Pistachio", "sea salt pistachio"],
+        "海盐开心果黑巧": ["海盐开心果巧克力", "开心果黑巧", "海盐开心果", "Sea Salt Pistachio", "sea salt pistachio"],
+        "100% 委内瑞拉黑巧": ["委内瑞拉黑巧", "100黑巧", "100%黑巧"],
+        "白巧柚子": ["柚子白巧", "白巧柚子巧克力"],
+        "61% 牛奶巧克力": ["61牛奶巧", "牛奶巧克力", "61% milk", "61 milk", "milk 61"],
+        "树莓巧克力": ["树莓黑巧", "树莓巧", "Raspberry Dark", "raspberry dark"]
+      };
+      return [
+        ...(builtIn[product.product_name] || []),
+        ...asArray(product.product_alias || product.product_aliases || product.alias)
+      ];
+    }
+
+    function resolveById(value, rows, key, warnings, label) {
+      const id = cellText(value);
+      if (!id) return "";
+      if (rows.some(row => row[key] === id)) return id;
+      warnings.push(`${label} ID 未在当前数据中找到：${id}`);
+      return id;
+    }
+
+    function resolveContact(value, context, warnings) {
+      return resolveById(value, context.contacts, "contact_id", warnings, "联系人");
+    }
+
+    function bestFuzzy(text, rows, key) {
+      const scored = rows
+        .filter(row => row[key])
+        .map(row => ({ row, score: similarity(normalizeName(text), normalizeName(row[key])) }))
+        .sort((a, b) => b.score - a.score);
+      return scored[0] || { row: {}, score: 0 };
+    }
+
+    function normalizeName(value) {
+      return String(value || "").toLowerCase().replace(/[\s\-_%（）()·.,，。/]/g, "");
+    }
+
+    function similarity(a, b) {
+      if (!a || !b) return 0;
+      if (a === b) return 1;
+      if (a.includes(b) || b.includes(a)) return Math.min(a.length, b.length) / Math.max(a.length, b.length);
+      const distance = levenshtein(a, b);
+      return 1 - distance / Math.max(a.length, b.length);
+    }
+
+    function levenshtein(a, b) {
+      const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+      for (let i = 0; i <= a.length; i += 1) dp[i][0] = i;
+      for (let j = 0; j <= b.length; j += 1) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i += 1) {
+        for (let j = 1; j <= b.length; j += 1) {
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+          );
+        }
+      }
+      return dp[a.length][b.length];
+    }
+
+    function nextImportId(table, rowNumber) {
+      const prefix = {
+        customers: "CUS",
+        contacts: "CON",
+        products: "PRO",
+        samples: "SAM",
+        opportunities: "OPP",
+        quotes: "QUO",
+        orders: "ORD",
+        interactions: "INT",
+        customerFeedback: "FDB"
+      }[table] || "IMP";
+      return `${prefix}-IMP-${String(rowNumber).padStart(4, "0")}`;
+    }
+
+    function normalizeDateValue(value) {
+      const text = cellText(value);
+      if (!text) return "";
+      const serial = Number(text);
+      if (Number.isFinite(serial) && serial > 20000 && serial < 80000) {
+        const date = new Date(Date.UTC(1899, 11, 30 + serial));
+        return date.toISOString().slice(0, 10);
+      }
+      const date = new Date(text);
+      if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10);
+      return text;
+    }
+
+    async function parseXlsxFile(arrayBuffer) {
+      const entries = await readZipEntries(arrayBuffer);
+      const workbookXml = await zipText(entries, "xl/workbook.xml");
+      const relsXml = await zipText(entries, "xl/_rels/workbook.xml.rels");
+      const sharedStrings = entries.has("xl/sharedStrings.xml") ? parseSharedStrings(await zipText(entries, "xl/sharedStrings.xml")) : [];
+      const workbook = parseXml(workbookXml);
+      const rels = parseXml(relsXml);
+      const relMap = {};
+      Array.from(rels.getElementsByTagName("Relationship")).forEach(rel => {
+        relMap[rel.getAttribute("Id")] = rel.getAttribute("Target");
+      });
+      const sheets = [];
+      for (const sheet of Array.from(workbook.getElementsByTagName("sheet"))) {
+        const name = sheet.getAttribute("name");
+        const relId = sheet.getAttribute("r:id") || sheet.getAttribute("id");
+        const target = relMap[relId];
+        if (!target) continue;
+        const path = normalizeZipPath(target.startsWith("/") ? target.slice(1) : `xl/${target}`);
+        if (!entries.has(path)) continue;
+        sheets.push({ sheetName: name, rows: await parseWorksheetXml(entries, path, sharedStrings) });
+      }
+      return sheets;
+    }
+
+    async function readZipEntries(arrayBuffer) {
+      const view = new DataView(arrayBuffer);
+      let eocd = -1;
+      for (let i = view.byteLength - 22; i >= Math.max(0, view.byteLength - 70000); i -= 1) {
+        if (view.getUint32(i, true) === 0x06054b50) {
+          eocd = i;
+          break;
+        }
+      }
+      if (eocd < 0) throw new Error("无法读取 XLSX ZIP 目录");
+      const total = view.getUint16(eocd + 10, true);
+      let offset = view.getUint32(eocd + 16, true);
+      const entries = new Map();
+      for (let i = 0; i < total; i += 1) {
+        if (view.getUint32(offset, true) !== 0x02014b50) throw new Error("XLSX ZIP 目录损坏");
+        const method = view.getUint16(offset + 10, true);
+        const compressedSize = view.getUint32(offset + 20, true);
+        const fileNameLength = view.getUint16(offset + 28, true);
+        const extraLength = view.getUint16(offset + 30, true);
+        const commentLength = view.getUint16(offset + 32, true);
+        const localOffset = view.getUint32(offset + 42, true);
+        const nameBytes = new Uint8Array(arrayBuffer, offset + 46, fileNameLength);
+        const name = normalizeZipPath(new TextDecoder().decode(nameBytes));
+        const localNameLength = view.getUint16(localOffset + 26, true);
+        const localExtraLength = view.getUint16(localOffset + 28, true);
+        const dataStart = localOffset + 30 + localNameLength + localExtraLength;
+        const data = new Uint8Array(arrayBuffer, dataStart, compressedSize);
+        entries.set(name, { method, data });
+        offset += 46 + fileNameLength + extraLength + commentLength;
+      }
+      return entries;
+    }
+
+    async function zipText(entries, path) {
+      const entry = entries.get(normalizeZipPath(path));
+      if (!entry) throw new Error(`XLSX 缺少 ${path}`);
+      let bytes;
+      if (entry.method === 0) {
+        bytes = entry.data;
+      } else if (entry.method === 8) {
+        if (!("DecompressionStream" in window)) throw new Error("当前浏览器不支持本地 XLSX 解压，请改用 CSV");
+        try {
+          const stream = new Blob([entry.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+          bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+        } catch {
+          const stream = new Blob([entry.data]).stream().pipeThrough(new DecompressionStream("deflate"));
+          bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+        }
+      } else {
+        throw new Error(`不支持的 XLSX 压缩方式：${entry.method}`);
+      }
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function normalizeZipPath(path) {
+      const parts = [];
+      path.replace(/\\/g, "/").split("/").forEach(part => {
+        if (!part || part === ".") return;
+        if (part === "..") parts.pop();
+        else parts.push(part);
+      });
+      return parts.join("/");
+    }
+
+    function parseXml(text) {
+      const xml = new DOMParser().parseFromString(text, "application/xml");
+      if (xml.getElementsByTagName("parsererror").length) throw new Error("XLSX XML 解析失败");
+      return xml;
+    }
+
+    function parseSharedStrings(text) {
+      const xml = parseXml(text);
+      return Array.from(xml.getElementsByTagName("si")).map(si => Array.from(si.getElementsByTagName("t")).map(t => t.textContent || "").join(""));
+    }
+
+    async function parseWorksheetXml(entries, path, sharedStrings) {
+      const xml = parseXml(await zipText(entries, path));
+      const matrix = [];
+      Array.from(xml.getElementsByTagName("row")).forEach(row => {
+        const rowIndex = Number(row.getAttribute("r") || matrix.length + 1) - 1;
+        matrix[rowIndex] = matrix[rowIndex] || [];
+        Array.from(row.getElementsByTagName("c")).forEach(cell => {
+          const ref = cell.getAttribute("r") || "";
+          const col = columnIndex(ref.replace(/\d+/g, ""));
+          const type = cell.getAttribute("t");
+          const v = cell.getElementsByTagName("v")[0];
+          const inline = Array.from(cell.getElementsByTagName("t")).map(t => t.textContent || "").join("");
+          let value = v ? v.textContent || "" : inline;
+          if (type === "s") value = sharedStrings[Number(value)] || "";
+          if (type === "b") value = value === "1" ? "TRUE" : "FALSE";
+          matrix[rowIndex][col] = value;
+        });
+      });
+      return matrixToObjects(matrix);
+    }
+
+    function columnIndex(letters) {
+      return String(letters || "A").split("").reduce((sum, char) => sum * 26 + char.charCodeAt(0) - 64, 0) - 1;
+    }
+
+    function matrixToObjects(matrix) {
+      const headerIndex = matrix.findIndex(row => (row || []).filter(cell => cell !== undefined && cell !== "").length >= 2);
+      if (headerIndex < 0) return [];
+      const headers = (matrix[headerIndex] || []).map((header, index) => cellText(header) || `Column_${index + 1}`);
+      return matrix.slice(headerIndex + 1)
+        .filter(row => row && row.some(cell => cell !== undefined && cell !== ""))
+        .map(row => headers.reduce((record, header, index) => {
+          record[header] = normalizeCellValue(row[index]);
+          return record;
+        }, {}));
+    }
+
+    function importCustomersCsv() {
+      const input = document.getElementById("customerCsvFile");
+      const file = input.files && input.files[0];
+      if (!file) {
+        toast("请选择 customers.csv");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const rows = parseCsv(String(reader.result || ""));
+        const required = ["customer_name", "customer_type", "country", "city", "customer_level", "status", "owner"];
+        const validRows = rows.filter(row => required.every(key => row[key]));
+        const newRows = validRows.map(row => baseRecord({
+          customer_id: nextIdWithOffset("customers", state.customers.length + 1),
+          customer_name: row.customer_name,
+          customer_type: row.customer_type,
+          country: row.country,
+          city: row.city,
+          source_channel: row.source_channel || "CSV Import",
+          customer_level: row.customer_level,
+          status: row.status,
+          owner: row.owner,
+          notes: row.notes || ""
+        }));
+        state.customers.push(...newRows);
+        saveState(state);
+        renderNav();
+        render();
+        toast(`已导入 ${newRows.length} 个客户`);
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function nextIdWithOffset(table, offset) {
+      const prefix = { customers: "CUS" }[table] || "REC";
+      const nums = state[table].map(row => Number(String(row[tableMeta[table].id] || "").split("-").pop())).filter(Number.isFinite);
+      return makeId(prefix, Math.max(offset, (nums.length ? Math.max(...nums) : 0) + 1));
+    }
+
+    function parseCsvWithMeta(text) {
+      const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return { headers: [], rows: [] };
+      const headers = splitCsvLine(lines[0]).map(h => h.trim());
+      const rows = lines.slice(1).map(line => {
+        const cells = splitCsvLine(line);
+        return headers.reduce((row, header, index) => {
+          row[header] = cells[index] || "";
+          return row;
+        }, {});
+      }).filter(row => Object.values(row).some(value => String(value || "").trim()));
+      return { headers, rows };
+    }
+
+    function parseCsv(text) {
+      return parseCsvWithMeta(text).rows;
+    }
+
+    function splitCsvLine(line) {
+      const cells = [];
+      let current = "";
+      let quoted = false;
+      for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+        if (char === '"' && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else if (char === '"') {
+          quoted = !quoted;
+        } else if (char === "," && !quoted) {
+          cells.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      cells.push(current);
+      return cells;
+    }
+
+    init();
+  </script>
+</body>
+</html>
