@@ -2543,6 +2543,12 @@
                     <button class="btn" id="wizardImport">导入可用行</button>
                   </div>
                 </div>
+                <div class="import-box">
+                  <strong>Tier0 测试发送</strong>
+                  <div class="code">向 /api/tier0 发送 MOKE/RD/Samples 示例 JSON。</div>
+                  <button class="btn primary" id="importTier0TestSend">${icon("upload")}发送测试数据到 Tier0</button>
+                  <div class="code" id="importTier0TestResult" style="margin-top:8px">等待发送。</div>
+                </div>
                 <div id="importPreviewSummary">${renderImportPreviewSummary()}</div>
                 <div id="importPreviewTable">${renderImportPreviewTable()}</div>
               </div>
@@ -2586,6 +2592,10 @@
       document.getElementById("wizardAnalyze").addEventListener("click", handleWizardAnalyze);
       document.getElementById("wizardConfirmAll").addEventListener("click", confirmAllReviewRows);
       document.getElementById("wizardImport").addEventListener("click", commitWizardImport);
+      document.getElementById("importTier0TestSend").addEventListener("click", () => sendTier0TestEvent({
+        buttonId: "importTier0TestSend",
+        outputId: "importTier0TestResult"
+      }));
       document.getElementById("undoImport").addEventListener("click", undoLastImport);
       bindImportPreviewControls();
     }
@@ -2980,12 +2990,12 @@
       }
     }
 
-    async function sendTier0TestEvent() {
-      const button = document.getElementById("tier0DemoSend");
-      const output = document.getElementById("tier0DemoResult");
+    async function sendTier0TestEvent(options = {}) {
+      const button = document.getElementById(options.buttonId || "tier0DemoSend");
+      const output = document.getElementById(options.outputId || "tier0DemoResult");
       const eventBody = {
         event: "sample_created",
-        namespace: "MOKE/RD/Samples/RD-001",
+        namespace: "MOKE/RD/Samples",
         timestamp: new Date().toISOString(),
         payload: {
           sample_id: "RD-001",
@@ -3005,18 +3015,18 @@
         button.innerHTML = `${icon("refresh")}发送中...`;
       }
       if (output) {
-        output.textContent = JSON.stringify({ sending: true, request: eventBody }, null, 2);
+        output.textContent = "发送中\n" + JSON.stringify({ request: eventBody }, null, 2);
       }
       const result = await sendTier0Event(eventBody, "Tier0 测试事件已发送");
       if (output) {
-        output.textContent = JSON.stringify({
+        output.textContent = `${result.ok ? "成功返回" : "失败错误"}\n` + JSON.stringify({
           request: eventBody,
           result
         }, null, 2);
       }
       if (button) {
         button.disabled = false;
-        button.innerHTML = `${icon("upload")}发送 Tier0 测试事件`;
+        button.innerHTML = `${icon("upload")}${options.buttonId ? "发送测试数据到 Tier0" : "发送 Tier0 测试事件"}`;
       }
       return result;
     }
