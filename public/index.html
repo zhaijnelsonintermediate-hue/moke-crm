@@ -2049,11 +2049,11 @@
         </section>
         <section class="panel">
           <div class="panel-head">
-            <div class="panel-title"><strong>Tier0 演示集成</strong><span>通过 /api/tier0 向 Tier0 发送 JSON</span></div>
-            <button class="btn primary" id="tier0DemoSend">${icon("upload")}发送 Tier0 测试事件</button>
+            <div class="panel-title"><strong>Tier0 Demo Integration</strong><span>POST JSON through /api/tier0 to Tier0</span></div>
+            <button class="btn primary" id="tier0DemoSend">${icon("upload")}Send Test Event to Tier0</button>
           </div>
           <div class="panel-body">
-            <div class="code" id="tier0DemoResult">已准备好发送 moke-crm-demo 的 sample_created 测试事件。</div>
+            <div class="code" id="tier0DemoResult">Ready to send moke-crm-demo sample_created event.</div>
           </div>
         </section>
         <section class="grid two">
@@ -2962,7 +2962,7 @@
       toast.timer = setTimeout(() => node.classList.remove("show"), 2600);
     }
 
-    async function sendTier0Event(eventBody, successMessage = "Tier0 事件已发送") {
+    async function sendTier0Event(eventBody, successMessage = "Tier0 event sent") {
       try {
         const response = await fetch("/api/tier0", {
           method: "POST",
@@ -2978,14 +2978,14 @@
           response: parseMaybeJson(responseText)
         };
         if (!response.ok) {
-          toast(`Tier0 发送失败：${response.status}`);
+          toast(`Tier0 send failed: ${response.status}`);
           return result;
         }
         toast(successMessage);
         return result;
       } catch (error) {
-        console.error("Tier0 传输失败", error);
-        toast(`Tier0 发送失败：${error.message || error}`);
+        console.error("Tier0 transfer failed", error);
+        toast(`Tier0 send failed: ${error.message || error}`);
         return { ok: false, error: error.message || String(error) };
       }
     }
@@ -3026,7 +3026,7 @@
       }
       if (button) {
         button.disabled = false;
-        button.innerHTML = `${icon("upload")}${options.buttonId ? "发送测试数据到 Tier0" : "发送 Tier0 测试事件"}`;
+        button.innerHTML = `${icon("upload")}${options.buttonId ? "发送测试数据到 Tier0" : "Send Test Event to Tier0"}`;
       }
       return result;
     }
